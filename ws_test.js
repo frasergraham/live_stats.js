@@ -5,8 +5,16 @@ wss = new WebSocketServer({port: 8080});
 
 wss.on('connection', function(ws) {
 
+	
+
 	var interval = setInterval(function(){
-		ws.send('' + Math.floor(Math.random() * 100));
+	
+		var tmp = [];
+		for (i = 0;i < 10; i++){
+			tmp.push(Math.floor(Math.random() * 100);
+		}
+
+		ws.send(JSON.stringify(tmp));
 	}, 1000);
 
     ws.on('message', function(message) {
