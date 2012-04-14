@@ -1,0 +1,88 @@
+<doctype html>
+<html>
+	<head>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+		<script type="text/javascript" src="../d3.js"></script>
+		<link rel="stylesheet" type="text/css" href="d3_style.css">
+
+		<script>
+			
+			$(document).ready(function(){
+				var data = [23,56,77,21,33,12,55,26,66];
+
+				var connection = new WebSocket('ws://localhost:8080', null);
+				connection.onmessage = function (e) {
+				  console.log('Server: ' + e.data);
+					data[0] = parseInt(e.data);
+
+					chart.selectAll("rect")
+						.data(data)
+						.transition()
+						.duration(1000)
+						.attr("width", x); 				  
+	
+					chart.selectAll("text")
+						.data(data)
+						.transition()
+						.duration(1000)
+						.text(String)
+						.attr("x", x);
+				};
+
+				
+				var chart = d3.select("body")
+					 .append("svg:svg")
+					 .attr("class", "chart")
+					 .attr("width", 500)
+					 .attr("height", 20 * data.length + 10)
+				   // .append("g")				// this is a group tag
+				   // .attr("transform", "translate(10,15)"); // translate the group together
+				 
+				var x = d3.scale.linear()
+			     .domain([0, 100])
+			     .range([0, 500]);
+				 
+				var y = d3.scale.ordinal()
+			     .domain(data)
+			     .rangeBands([0, 160]);
+
+		 		chart.selectAll("line")
+				    .data(x.ticks(10))
+				    .enter().append("line")
+				    .attr("x1", x)
+				    .attr("x2", x)
+				    .attr("y1", 0)
+				    .attr("y2", 160)
+				    .style("stroke", "#ccc");
+			     
+			  chart.selectAll("rect")
+						.data(data)
+						.enter().append("svg:rect")
+						.attr("y", y)
+						.attr("width", x)
+						.attr("height", y.rangeBand());
+				
+				chart.selectAll("text")
+						.data(data)
+						.enter().append("svg:text")
+						.attr("x", x)
+						.attr("y", function(d) { return y(d) + y.rangeBand() / 2; })
+						.attr("dx", -3) // padding-right
+						.attr("dy", ".35em") // vertical-align: middle
+						.attr("text-anchor", "end") // text-align: right
+						.text(String);
+		});
+
+		</script>
+
+
+	<script>
+		document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+	</script>
+	
+	</head>
+	<body>
+
+	</body>
+</html>
