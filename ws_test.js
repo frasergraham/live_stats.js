@@ -9,10 +9,18 @@ wss.on('connection', function(ws) {
 
 	var interval = setInterval(function(){
 	
-		var tmp = [];
-		for (i = 0;i < 10; i++){
-			tmp.push(Math.floor(Math.random() * 100);
-		}
+		var tmp = ['fps',
+              'ms/f',
+              'mem',
+              'tex. mem',
+              'mesh mem',
+              'draw calls'];
+
+		tmp = tmp.map(function(e){ 
+						return {name : e, 
+								value: Math.floor(Math.random() * 100)
+								}
+							});
 
 		ws.send(JSON.stringify(tmp));
 	}, 1000);
