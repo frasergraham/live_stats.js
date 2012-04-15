@@ -14,7 +14,8 @@ wss.on('connection', function(ws) {
               'mem',
               'tex. mem',
               'mesh mem',
-              'draw calls'];
+              'draw calls',
+              "junk"];
 
 		tmp = tmp.map(function(e){ 
 						return {name : e, 
