@@ -10,15 +10,16 @@
       
       $(document).ready(function(){
 					live_charts.new_bar_chart("ws://localhost:8080", "body");
+					live_charts.new_bar_chart("ws://localhost:8080", "body", 200, 200);
         });
 
     </script>
 
 
   <script>
-    document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+    // <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
   </script>
-  
+   
   </head>
   <body>
 
