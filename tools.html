@@ -9,8 +9,9 @@
     <script>
       
       $(document).ready(function(){
-					live_charts.new_bar_chart("ws://localhost:8080", "body");
-					live_charts.new_bar_chart("ws://localhost:8080", "body", 200, 200);
+      		live_charts.connect_to_data_source("ws://localhost:8080");
+					live_charts.new_bar_chart("ws://localhost:8080", "body", "perf_data");
+					live_charts.new_bar_chart("ws://localhost:8080", "body", "other", 200, 200);
         });
 
     </script>
