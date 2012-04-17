@@ -7,28 +7,40 @@ var live_charts = function(my) {
   // Store which data sources refresh which graphs
   my.source_mappings = {};
 
-  my.connect_to_data_source = function(websocket_server){
+  my.connect_to_data_source = function(websocket_server, default_chart_factory, default_selector){
       my.source_mappings[websocket_server] = {};
       
-      connection = new WebSocket(websocket_server, null);
+      var establish_connection = function(){
 
-      connection.onopen = function(){
-        console.log("Connected to " + websocket_server);
-        clearInterval(ping);
-      };
+        connection = new WebSocket(websocket_server, null);
 
-      connection.onclose = function(){
-        console.log("Disconnected from " + websocket_server);
-        setTimeout(function(){
-          establish_connection();
-        }, 5000);
-      };
+        connection.onopen = function(){
+          console.log("Connected to " + websocket_server);
+          clearInterval(ping);
+        };
+
+        connection.onclose = function(){
+          console.log("Disconnected from " + websocket_server);
+          setTimeout(function(){
+            establish_connection();
+          }, 5000);
+        };
+
+      }();
 
       connection.onmessage = function (e) {
         new_data = JSON.parse(e.data);
         for (set in new_data){
           if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
             my.source_mappings[websocket_server][set](new_data[set]);
+          }
+          else{
+            // This data is unhandled, if we have specified a chart factory use it to 
+            // make a chart for this data now.
+
+            if (typeof default_chart_factory !== 'undefined'){
+              default_chart_factory(websocket_server, default_selector || "body", set);
+            }
           }
         }
       };
