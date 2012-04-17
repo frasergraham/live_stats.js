@@ -18,15 +18,20 @@ console.log(data);
 wss.on('connection', function(ws) {
 
 	var interval = setInterval(function(){
-	
-		tmp = data.map(function(e){ 
-						return {name : e, 
-								value: Math.floor(Math.random() * 100)
-								}
-							});
+		var tmp_rand = {};
 
-		console.log(tmp);
-		ws.send(JSON.stringify(tmp));
+		for (set in data){
+			var random_set = data[set].map(function(e){ 
+				return {name : e, 
+						value: Math.floor(Math.random() * 100)
+						}
+					});
+
+			tmp_rand[set] = random_set;
+		}
+		
+		console.log(tmp_rand);
+		ws.send(JSON.stringify(tmp_rand));
 	}, 1000);
 
     ws.on('message', function(message) {

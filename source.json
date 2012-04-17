@@ -1,11 +1,14 @@
-["fps",
-"ms/f",
-"mem",
-"tex. mem",
-"mesh mem",
-"draw calls",
-"junk",
-"fraser",
-"test",
-"test2"]
+{
+	"perf_data": [	"fps",
+					"ms/f",
+					"mem",
+					"tex. mem",
+					"mesh mem",
+					"draw calls",
+					"junk",
+					"fraser",
+					"test",
+					"test2"],
+	"other" : ["a", "b", "c"]
+}
 
