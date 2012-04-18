@@ -1,0 +1,29 @@
+<doctype html>
+<html>
+  <head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+		<script type="text/javascript" src="../d3.v2.js"></script>
+		<script type="text/javascript" src="live_charts.js"></script>
+    <link rel="stylesheet" type="text/css" href="d3_style.css">
+
+    <script>
+      
+      $(document).ready(function(){
+      		live_charts.connect_to_data_source("ws://localhost:8080", live_charts.new_bar_chart);
+
+					// live_charts.new_bar_chart("ws://localhost:8080", "body", "perf_data");
+					live_charts.new_bar_chart("ws://localhost:8080", "body", "other", 200, 200);
+        });
+
+    </script>
+
+
+  <script>
+    // <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+  </script>
+   
+  </head>
+  <body>
+
+  </body>
+</html>
