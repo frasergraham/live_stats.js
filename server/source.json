@@ -8,7 +8,9 @@
 					"junk",
 					"fraser",
 					"test",
-					"test2"],
-	"other" : ["a", "b", "c"]
+					"test2",
+					"fraser2"],
+					
+	"other" : ["a", "b", "c", "d"]
 }
 

@@ -23,7 +23,7 @@ wss.on('connection', function(ws) {
 		for (set in data){
 			var random_set = data[set].map(function(e){ 
 				return {name : e, 
-						value: Math.floor(Math.random() * 100)
+						value: Math.floor(Math.random() * 1000)
 						}
 					});
 
@@ -32,7 +32,7 @@ wss.on('connection', function(ws) {
 		
 		console.log(tmp_rand);
 		ws.send(JSON.stringify(tmp_rand));
-	}, 1000);
+	}, 500);
 
     ws.on('message', function(message) {
         console.log('received: %s', message);
