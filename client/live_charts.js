@@ -29,8 +29,10 @@ var live_charts = function(my) {
           new_data = JSON.parse(e.data);
           for (set in new_data){
             if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
-              my.source_mappings[websocket_server][set](new_data[set]);
-            }
+              for (draw_func in my.source_mappings[websocket_server][set]){
+                my.source_mappings[websocket_server][set][draw_func](new_data[set]);
+              }
+            } 
             else{
               // This data is unhandled, if we have specified a chart factory use it to 
               // make a chart for this data now.
@@ -53,7 +55,10 @@ var live_charts = function(my) {
       return;
     }
 
-    my.source_mappings[websocket_server][source_set] = draw_callback;
+    if (typeof my.source_mappings[websocket_server][source_set] === 'undefined'){
+      my.source_mappings[websocket_server][source_set] = [];
+    }
+    my.source_mappings[websocket_server][source_set].push(draw_callback);
   }
 
   // Charts are created with a server and a place in the DOM to put them
