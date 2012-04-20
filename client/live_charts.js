@@ -189,6 +189,10 @@ var live_charts = function(my) {
     arc = d3.svg.arc()
             .innerRadius(innerRadius)
             .outerRadius(outerRadius);
+
+    label_arc = d3.svg.arc()
+            .innerRadius(outerRadius * .6)
+            .outerRadius(outerRadius);
     
     data = [];
 
@@ -199,39 +203,50 @@ var live_charts = function(my) {
         .attr("width", width)
         .attr("height", height);
 
-    vis.selectAll("g.arc")
-      .data(donut)
-      .enter()
-    .append("g")
-      .attr("class", "arc")
-      .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
-    .append("path")
-      .attr("fill", function(d, i) { return color(i); })
-      .attr("d", arc)
-    .each(function(d) { this._current = d; });
-
     my_chart.redraw = function(data_src){
 
       vis.data([data_src]);
 
-      vis.selectAll("g.arc")
+      var e = vis.selectAll("g.arc")
         .data(donut)
         .enter()
-      .append("g")
+      
+      e.append("g")
         .attr("class", "arc")
         .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
       .append("path")
         .attr("fill", function(d, i) { return color(i); })
         .attr("d", arc)
-      .each(function(d) { this._current = d;});
+      .each(function(d) { this._current = d;})
+
+      e.append("g")
+        .attr("class", "label")
+        .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+      .append("svg:text")
+        .attr("class", "label")
+        .attr("text-anchor", "middle")
+        .attr("transform", function(d){
+            d.innerRadius = innerRadius
+            d.outerRadius = outerRadius;
+            return "translate(" + label_arc.centroid(d) + ")";})
+        .text(function(d){return d.data.name});
+
 
       vis.selectAll("g.arc")
         .data(donut)
       .select("path")
         .transition()
         .duration(500)
-        .attrTween("d", arcTween);
-    
+        .attrTween("d", arcTween)
+      
+      vis.selectAll("g.label")
+        .data(donut)
+        .select("text")
+        .transition()
+        .duration(500)
+        .attr("transform", function(d){ return "translate(" + label_arc.centroid(d) + ")";})
+        .text(function(d){return d.data.name});
+
       vis.selectAll("g.arc")
         .data(donut)
         .exit()

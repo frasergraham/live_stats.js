@@ -4,9 +4,11 @@
   shape-rendering: crispEdges;
 }
 
-.chart {
+.smooth_chart {
   margin-left: 42px;
-  font: 10px sans-serif;
+  font: 14px sans-serif;
+  stroke: white;
+  fill: white;
 }
 
 .chart rect {
