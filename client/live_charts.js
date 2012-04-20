@@ -182,6 +182,9 @@ var live_charts = function(my) {
   my.new_pie_chart = function(websocket_server, selector, source_set, width, height){
     var my_chart = {};
 
+    var width = typeof width !== 'undefined' ? width : 400;
+    var height = typeof height !== 'undefined' ? height : 400;
+
     outerRadius = Math.min(width, height) / 2,
     innerRadius = outerRadius * .0,
     color = d3.scale.category20(),
