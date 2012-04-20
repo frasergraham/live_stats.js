@@ -178,12 +178,13 @@ var live_charts = function(my) {
     outerRadius = Math.min(width, height) / 2,
     innerRadius = outerRadius * .6,
     color = d3.scale.category20(),
-    donut = d3.layout.pie().value(function(d){ return d.value;}),
+    donut = d3.layout.pie().value(function(d){ return d.value;}).sort(null),
     arc = d3.svg.arc()
             .innerRadius(innerRadius)
             .outerRadius(outerRadius);
     
-    data = [];
+    data = [{name:"a", value: 20},
+            {name:"b", value: 40}];
 
     var vis = d3.select("body")
       .append("svg")
@@ -191,43 +192,50 @@ var live_charts = function(my) {
         .attr("width", width)
         .attr("height", height);
 
-    my_chart.draw = function(data_src){
+    vis.selectAll("g.arc")
+      .data(donut)
+      .enter()
+    .append("g")
+      .attr("class", "arc")
+      .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+    .append("path")
+      .attr("fill", function(d, i) { return color(i); })
+      .attr("d", arc)
+    .each(function(d) { this._current = d; });
 
-      vis.data([data_src], function(d) { return d.name});
+    my_chart.redraw = function(data_src){
 
-      var arcs = vis.selectAll("g.arc").data(donut, function(d){return d.data.name});
-      
-      var make_arc = function(d){
-        return d.append("g")
-          .attr("class", "arc")
-          .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
-          .append("path")
-          .attr("fill", function(d, i) { return color(i); })
-          .attr("d", arc);
-      }
+      vis.data([data_src]);
 
-      make_arc(arcs.enter());
+      vis.selectAll("g.arc")
+      .data(donut)
+      .enter()
+      .append("g")
+        .attr("class", "arc")
+        .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+      .append("path")
+        .attr("fill", function(d, i) { return color(i); })
+        .attr("d", arc)
+      .each(function(d) { this._current = d; console.log(this._current);});
 
-      vis.selectAll("path").data(donut).exit().remove();
-
-    // Interpolate the arcs in data space.
-    function arcTween(a) {
-       var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
-       return function(t) {
-         var b = i(t);
-         a.x0 = b.x;
-         a.dx0 = b.dx;
-         return arc(b);
-       };
-    }
+      vis.selectAll("g.arc")
+        .data(donut)
+      .select("path").transition()
+        .attrTween("d", arcTween);
     
-    vis.selectAll("path").data(donut).transition()
-          .duration(1000)
-          .attr("d", arc)
-
     };
 
-    my.register_data_source(websocket_server, source_set, my_chart.draw);
+    // Store the currently-displayed angles in this._current.
+    // Then, interpolate from this._current to the new angles.
+    function arcTween(a) {
+      var i = d3.interpolate(this._current, a);
+      this._current = i(0);
+      return function(t) {
+        return arc(i(t));
+      };
+    }
+
+    my.register_data_source(websocket_server, source_set, my_chart.redraw);
     return my_chart;    
   };
 
