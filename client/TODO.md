@@ -3,8 +3,11 @@ live_stats Client TODO
 
 - Different Chart Types
 	- Line/Area with history
-	- Pie?
-
+	O Pie
+		X static
+		X dynamic
+		X Labels
+		- Key
 
 - CSS or other styling options
 - Template page that's prettier
