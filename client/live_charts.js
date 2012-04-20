@@ -254,6 +254,11 @@ var live_charts = function(my) {
         .data(donut)
         .exit()
         .remove();
+        
+      vis.selectAll("g.label")
+        .data(donut)
+        .exit()
+        .remove();
 
     };
 
