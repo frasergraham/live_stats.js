@@ -32,7 +32,7 @@ wss.on('connection', function(ws) {
 		
 		console.log(tmp_rand);
 		ws.send(JSON.stringify(tmp_rand));
-	}, 2000);
+	}, 1000);
 
     ws.on('message', function(message) {
         console.log('received: %s', message);
