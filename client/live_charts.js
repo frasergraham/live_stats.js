@@ -208,21 +208,26 @@ var live_charts = function(my) {
       vis.data([data_src]);
 
       vis.selectAll("g.arc")
-      .data(donut)
-      .enter()
+        .data(donut)
+        .enter()
       .append("g")
         .attr("class", "arc")
         .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
       .append("path")
         .attr("fill", function(d, i) { return color(i); })
         .attr("d", arc)
-      .each(function(d) { this._current = d; console.log(this._current);});
+      .each(function(d) { this._current = d;});
 
       vis.selectAll("g.arc")
         .data(donut)
       .select("path").transition()
         .attrTween("d", arcTween);
     
+      vis.selectAll("g.arc")
+        .data(donut)
+        .exit()
+        .remove();
+        
     };
 
     // Store the currently-displayed angles in this._current.
