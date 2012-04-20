@@ -172,6 +172,65 @@ var live_charts = function(my) {
     return my_chart;
   };
 
+  my.new_pie_chart = function(websocket_server, selector, source_set, width, height){
+    var my_chart = {};
+
+    outerRadius = Math.min(width, height) / 2,
+    innerRadius = outerRadius * .6,
+    color = d3.scale.category20(),
+    donut = d3.layout.pie().value(function(d){ return d.value;}),
+    arc = d3.svg.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(outerRadius);
+    
+    data = [];
+
+    var vis = d3.select("body")
+      .append("svg")
+        .data([data])
+        .attr("width", width)
+        .attr("height", height);
+
+    my_chart.draw = function(data_src){
+
+      vis.data([data_src], function(d) { return d.name});
+
+      var arcs = vis.selectAll("g.arc").data(donut, function(d){return d.data.name});
+      
+      var make_arc = function(d){
+        return d.append("g")
+          .attr("class", "arc")
+          .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+          .append("path")
+          .attr("fill", function(d, i) { return color(i); })
+          .attr("d", arc);
+      }
+
+      make_arc(arcs.enter());
+
+      vis.selectAll("path").data(donut).exit().remove();
+
+    // Interpolate the arcs in data space.
+    function arcTween(a) {
+       var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
+       return function(t) {
+         var b = i(t);
+         a.x0 = b.x;
+         a.dx0 = b.dx;
+         return arc(b);
+       };
+    }
+    
+    vis.selectAll("path").data(donut).transition()
+          .duration(1000)
+          .attr("d", arc)
+
+    };
+
+    my.register_data_source(websocket_server, source_set, my_chart.draw);
+    return my_chart;    
+  };
+
   return my;
 
 }(live_charts || {});
