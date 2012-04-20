@@ -183,12 +183,12 @@ var live_charts = function(my) {
             .innerRadius(innerRadius)
             .outerRadius(outerRadius);
     
-    data = [{name:"a", value: 20},
-            {name:"b", value: 40}];
+    data = [];
 
     var vis = d3.select("body")
       .append("svg")
         .data([data])
+        .attr("class", "chart")
         .attr("width", width)
         .attr("height", height);
 
