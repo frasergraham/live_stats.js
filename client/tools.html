@@ -9,10 +9,11 @@
     <script>
       
       $(document).ready(function(){
-      		live_charts.connect_to_data_source("ws://localhost:8080", live_charts.new_bar_chart);
+      		live_charts.connect_to_data_source("ws://localhost:8080", live_charts.new_pie_chart);
 
-					live_charts.new_bar_chart("ws://localhost:8080", "body", "perf_data");
-					live_charts.new_pie_chart("ws://localhost:8080", "body", "perf_data", 600, 600);
+          live_charts.new_bar_chart("ws://localhost:8080", "body", "perf_data");
+          live_charts.new_pie_chart("ws://localhost:8080", "body", "perf_data");
+					live_charts.new_bar_chart("ws://localhost:8080", "body", "other");
 
         });
 
