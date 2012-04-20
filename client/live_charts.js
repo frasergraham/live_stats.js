@@ -80,6 +80,7 @@ var live_charts = function(my) {
 
     var data;
     var chart, x, y;
+    color = d3.scale.category20();
 
     chart = d3.select(selector)
      .append("svg:svg")
@@ -111,7 +112,8 @@ var live_charts = function(my) {
         return d.append("svg:rect")
             .attr("y", function(d,i){ return y(d.name);})
             .attr("width", function(d,i){ return x(d.value);})
-            .attr("height", y.rangeBand());
+            .attr("height", y.rangeBand())
+            .attr("fill", function(d, i) { return color(i); });
       };
 
       var build_label = function(d){
@@ -181,7 +183,7 @@ var live_charts = function(my) {
     var my_chart = {};
 
     outerRadius = Math.min(width, height) / 2,
-    innerRadius = outerRadius * .6,
+    innerRadius = outerRadius * .0,
     color = d3.scale.category20(),
     donut = d3.layout.pie().value(function(d){ return d.value;}).sort(null),
     arc = d3.svg.arc()
@@ -193,7 +195,7 @@ var live_charts = function(my) {
     var vis = d3.select("body")
       .append("svg")
         .data([data])
-        .attr("class", "chart")
+        .attr("class", "smooth_chart")
         .attr("width", width)
         .attr("height", height);
 
@@ -225,14 +227,16 @@ var live_charts = function(my) {
 
       vis.selectAll("g.arc")
         .data(donut)
-      .select("path").transition()
+      .select("path")
+        .transition()
+        .duration(500)
         .attrTween("d", arcTween);
     
       vis.selectAll("g.arc")
         .data(donut)
         .exit()
         .remove();
-        
+
     };
 
     // Store the currently-displayed angles in this._current.

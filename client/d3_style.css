@@ -4,17 +4,13 @@
   shape-rendering: crispEdges;
 }
 
-.chart div {
-  background-color: steelblue;
-  text-align: right;
-  padding: 3px;
-  margin: 1px;
-  color: white;
+.chart {
+  margin-left: 42px;
+  font: 10px sans-serif;
 }
 
 .chart rect {
   stroke: white;
-  fill: steelblue;
 }
 
 .chart text {
