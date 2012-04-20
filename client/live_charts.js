@@ -10,40 +10,40 @@ var live_charts = function(my) {
   my.connect_to_data_source = function(websocket_server, default_chart_factory, default_selector){
       my.source_mappings[websocket_server] = {};
       
-      var establish_connection = function(){
+      var establish_connection = function establish_connection(){
 
-        connection = new WebSocket(websocket_server, null);
+        my.connection = new WebSocket(websocket_server, null);
 
-        connection.onopen = function(){
+        my.connection.onopen = function(){
           console.log("Connected to " + websocket_server);
-          clearInterval(ping);
         };
 
-        connection.onclose = function(){
-          console.log("Disconnected from " + websocket_server);
+        my.connection.onclose = function(){
+          console.log("Lost Connection: " + websocket_server);
           setTimeout(function(){
             establish_connection();
           }, 5000);
         };
 
-      }();
+        my.connection.onmessage = function (e) {
+          new_data = JSON.parse(e.data);
+          for (set in new_data){
+            if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
+              my.source_mappings[websocket_server][set](new_data[set]);
+            }
+            else{
+              // This data is unhandled, if we have specified a chart factory use it to 
+              // make a chart for this data now.
 
-      connection.onmessage = function (e) {
-        new_data = JSON.parse(e.data);
-        for (set in new_data){
-          if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
-            my.source_mappings[websocket_server][set](new_data[set]);
-          }
-          else{
-            // This data is unhandled, if we have specified a chart factory use it to 
-            // make a chart for this data now.
-
-            if (typeof default_chart_factory !== 'undefined'){
-              default_chart_factory(websocket_server, default_selector || "body", set);
+              if (typeof default_chart_factory !== 'undefined'){
+                default_chart_factory(websocket_server, default_selector || "body", set);
+              }
             }
           }
-        }
-      };
+        };
+
+      }();
+
   };
 
   my.register_data_source = function(websocket_server, source_set, draw_callback){
@@ -61,6 +61,8 @@ var live_charts = function(my) {
   // A chart will manage it's own 
   my.new_bar_chart = function(websocket_server, selector, source_set, width, height){
     
+    var my_chart = {}
+
     if (typeof my.source_mappings[websocket_server] === 'undefined'){
       throw websocket_server + " is not connected, call connect_to_data_source() first";
       return;
@@ -73,8 +75,6 @@ var live_charts = function(my) {
 
     var data;
     var chart, x, y;
-    var connection;
-    var ping;
 
     chart = d3.select(selector)
      .append("svg:svg")
@@ -82,14 +82,14 @@ var live_charts = function(my) {
      .attr("width", width)
      .attr("height", height)
      .append("g")        // this is a group tag
-     .attr("transform", "translate(60,0)"); // translate the group together
+     .attr("transform", "translate(" + margin_padding + ",20)"); // translate the group together
 
     x = d3.scale.linear()
        .domain([0, 100])
        .range([0, width - margin_padding - 10]);
      
     y = d3.scale.ordinal()
-        .rangeBands([0, height]);
+        .rangeBands([0, height-20]);
 
     chart.selectAll("line")
         .data(x.ticks(10))
@@ -100,8 +100,7 @@ var live_charts = function(my) {
         .attr("y2", height)
         .style("stroke", "#ccc");
 
-
-    var draw = function (data_src) {
+    my_chart.draw = function (data_src) {
        
       var build_node = function(d){
         return d.append("svg:rect")
@@ -169,7 +168,8 @@ var live_charts = function(my) {
 
     };  
 
-    my.register_data_source(websocket_server, source_set, draw);
+    my.register_data_source(websocket_server, source_set, my_chart.draw);
+    return my_chart;
   };
 
   return my;
