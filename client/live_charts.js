@@ -100,7 +100,7 @@ var live_charts = function(my) {
         .attr("y2", height)
         .style("stroke", "#ccc");
 
-    my_chart.draw = function (data_src) {
+    my_chart.redraw = function (data_src) {
        
       var build_node = function(d){
         return d.append("svg:rect")
@@ -168,7 +168,7 @@ var live_charts = function(my) {
 
     };  
 
-    my.register_data_source(websocket_server, source_set, my_chart.draw);
+    my.register_data_source(websocket_server, source_set, my_chart.redraw);
     return my_chart;
   };
 
