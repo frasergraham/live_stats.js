@@ -76,7 +76,7 @@ var live_charts = function(my) {
     var width = typeof width !== 'undefined' ? width : 400;
     var height = typeof height !== 'undefined' ? height : 400;
 
-    var margin_padding = 60;
+    var margin_padding = 80;
 
     var data;
     var chart, x, y;
@@ -192,7 +192,7 @@ var live_charts = function(my) {
     var height = typeof height !== 'undefined' ? height : 400;
 
     var saved_points = 100;
-    var margin = 0;
+    var margin = 80;
     var data = [];
     var chart, x, y;
     color = d3.scale.category20();
@@ -208,7 +208,7 @@ var live_charts = function(my) {
     // define scales
     x = d3.scale.linear()
       .domain([0, saved_points])
-      .range([margin, width]);
+      .range([0, width]);
 
     y = d3.scale.linear()
       .domain([0,100])
@@ -271,15 +271,27 @@ var live_charts = function(my) {
         .exit()
         .remove();
 
-      chart.selectAll("line")
-        .data(my_chart.historical_values)
-        .enter().append("line")
-        .attr("x1", 0)
-        .attr("x2", width)
-        .attr("y1", function(d,i){ return y_bands(d[0].name);})
-        .attr("y2", function(d,i){ return y_bands(d[0].name);})
-        .style("stroke", "#ccc");
+      if (stacked){
+        chart.selectAll("line")
+          .data(my_chart.historical_values)
+          .enter().append("line")
+          .attr("x1", 0)
+          .attr("x2", width)
+          .attr("y1", function(d,i){ return y_bands(d[0].name);})
+          .attr("y2", function(d,i){ return y_bands(d[0].name);})
+          .style("stroke", "#ccc");
 
+        chart.selectAll("text.yAxis")
+          .data(my_chart.historical_values)
+          .enter()
+          .append("svg:text")
+          .attr("x", -margin)
+          .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+          .attr("dx", 0) // padding-right
+          .attr("dy", ".35em") // vertical-align: middle
+          .attr("class", "yAxis")
+          .text(function(d,i){return String(d[0].name)});
+      }
 
       for (data_set in data_src){
         

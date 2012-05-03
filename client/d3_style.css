@@ -1,7 +1,7 @@
 .chart {
   margin-left: 42px;
   font: 10px sans-serif;
-  shape-rendering: crispEdges;
+  shape-rendering: crispEdges; 
 }
 
 .smooth_chart {
@@ -16,6 +16,7 @@
 }
 
 .chart text {
+  font: 15px sans-serif;
   fill: black;
 }
 
