@@ -4,13 +4,9 @@
 					"mem",
 					"tex. mem",
 					"mesh mem",
-					"draw calls",
-					"junk",
-					"fraser",
 					"test",
-					"test2",
-					"fraser2",
-					"sandeep"],
+					"FRASER",
+					"GRAHAM"],
 					
 	"samples2" : ["FUN", "BEER", "BUS", "CAR"]
 }

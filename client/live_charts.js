@@ -190,8 +190,9 @@ var live_charts = function(my) {
     var width = typeof width !== 'undefined' ? width : 400;
     var height = typeof height !== 'undefined' ? height : 400;
 
+    var saved_points = 10;
     var margin = 0;
-    var data = [{value:50}];
+    var data = [[{value:50},{value:50},{value:50},{value:50}], [{value:70},{value:70},{value:70}]];
     var chart, x, y;
     color = d3.scale.category20();
 
@@ -205,7 +206,7 @@ var live_charts = function(my) {
 
     // define scales
     x = d3.scale.linear()
-      .domain([0, 20])
+      .domain([0, saved_points])
       .range([margin, width]);
 
     y = d3.scale.linear()
@@ -214,15 +215,16 @@ var live_charts = function(my) {
 
 		var line = d3.svg.line()
 								.x(function(d,i){ return x(i); })
-								.y(function(d){ return -1.0 * y(d.value) + height; })
+								.y(function(d,i){ return -1.0 * y(d.value) + height; })
 								.interpolate("cardinal");
 
-		chart.selectAll("path")
-			.data([data])
+		chart.selectAll("path") 
+			.data(data)
 			.enter()
 			.append("svg:path")
 			.attr("class", "line_chart")
-			.attr('d', line);
+      .attr("stroke", function(d, i) { return color(i); })
+			.attr('d', function(d,i){ return line(data[i]);} );
 
     // data storage, we're going to want to store the last X values of everything
     my_chart.historical_values = [];
@@ -230,23 +232,45 @@ var live_charts = function(my) {
     // draw function
     my_chart.redraw = function(data_src){
 
-      // append new values to historicals
-      my_chart.historical_values.push(data_src[0]);
+      chart.selectAll("path")
+        .data(my_chart.historical_values)
+        .enter()
+        .append("svg:path")
+        .attr("class", "line_chart")
+        .attr("stroke", function(d, i) { return color(i); })
+        .attr('d', function(d,i){ return line(my_chart.historical_values[i]);} );
 
-      if (my_chart.historical_values.length > 20){
-      	my_chart.historical_values.shift();
-				chart.selectAll("path")
-					.data([my_chart.historical_values])
-					.attr("transform", "translate(" + x(1) + ")") 
-					.attr("d", line) 
-					.transition(500) 
-					.attr("transform", "translate(" + x(0) + ")"); 	
+      chart.selectAll("path")
+        .data(my_chart.historical_values)
+        .exit()
+        .remove();
+
+      for (data_set in data_src){
+        
+        if (!my_chart.historical_values[data_set]){
+          my_chart.historical_values[data_set] = [];
+        }
+        
+        // append new values to historicals
+        my_chart.historical_values[data_set].push(data_src[data_set]);
+
+        if (my_chart.historical_values[data_set].length > saved_points){
+          my_chart.historical_values[data_set].shift();
+          chart.selectAll("path")
+            .data(my_chart.historical_values)
+            .attr("transform", "translate(" + x(1) + ")") 
+            .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
+            .transition()
+            .ease("linear")
+            .duration(500) 
+            .attr("transform", "translate(" + x(0) + ")");  
+        }
+        else {
+          chart.selectAll("path")
+            .data(my_chart.historical_values)
+            .attr("d", function(d,i){ return line(my_chart.historical_values[i]);}) 
+        }        
       }
-			else {
-				chart.selectAll("path")
-					.data([my_chart.historical_values])
-					.attr("d", line) 
-			}
     };
 
     my.register_data_source(websocket_server, source_set, my_chart.redraw);
