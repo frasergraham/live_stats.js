@@ -1,7 +1,9 @@
 
-var fs = require('fs')
+var fs = require('fs');
+var os = require('os');
+var sys = require('sys');
 var data = require("./source.json");
-var WebSocketServer = require('ws').Server
+var WebSocketServer = require('ws').Server;
 
 wss = new WebSocketServer({port: 8080});
 
@@ -30,6 +32,13 @@ wss.on('connection', function(ws) {
 			tmp_rand[set] = random_set;
 		}
 		
+		tmp_rand["OS_STATS"] = [];
+
+		tmp_rand["OS_STATS"].push({"name": "Total Mem", "value": Math.round(((os.totalmem() - os.freemem()) / os.totalmem()) * 100)});
+		tmp_rand["OS_STATS"].push({"name": "Free Mem", "value": Math.round(os.freemem() / os.totalmem() * 100)});
+		tmp_rand["OS_STATS"].push({"name": "Load Avg", "value": Math.round(os.loadavg()[0] * 25)});
+
+
 		console.log(tmp_rand);
 		ws.send(JSON.stringify(tmp_rand));
 	}, 500);

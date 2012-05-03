@@ -9,10 +9,9 @@
 					"fraser",
 					"test",
 					"test2",
-					"fraser2"],
+					"fraser2",
+					"sandeep"],
 					
-	"other" : ["a", "b", "c", "d"],
-	"samples" : ["FUN", "BEER", "BUS", "CAR"],
 	"samples2" : ["FUN", "BEER", "BUS", "CAR"]
 }
 
