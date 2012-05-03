@@ -181,6 +181,7 @@ var live_charts = function(my) {
 
   my.new_line_chart = function(websocket_server, selector, source_set, width, height){
     var my_chart = {}
+    var stacked = true;
 
     if (typeof my.source_mappings[websocket_server] === 'undefined'){
       throw websocket_server + " is not connected, call connect_to_data_source() first";
@@ -190,19 +191,19 @@ var live_charts = function(my) {
     var width = typeof width !== 'undefined' ? width : 400;
     var height = typeof height !== 'undefined' ? height : 400;
 
-    var saved_points = 10;
+    var saved_points = 100;
     var margin = 0;
-    var data = [[{value:50},{value:50},{value:50},{value:50}], [{value:70},{value:70},{value:70}]];
+    var data = [];
     var chart, x, y;
     color = d3.scale.category20();
 
     chart = d3.select(selector)
       .append("svg:svg")
       .attr("class", "chart")
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", width + 10)
+      .attr("height", height + 10)
       .append("g")        // this is a group tag
-      .attr("transform", "translate(" + margin + ",00)"); // translate the group together
+      .attr("transform", "translate(" + margin + ",5)"); // translate the group together
 
     // define scales
     x = d3.scale.linear()
@@ -213,9 +214,31 @@ var live_charts = function(my) {
       .domain([0,100])
       .range([0, height]);
 
+    if (stacked){
+      // make some more Y scales
+      y_bands = d3.scale.ordinal()
+                  .rangeBands([0,height]);
+
+      // chart.selectAll("line")
+      //   .data(x.ticks(10))
+      //   .enter().append("line")
+      //   .attr("x1", x)
+      //   .attr("x2", x)
+      //   .attr("y1", 0)
+      //   .attr("y2", height)
+      //   .style("stroke", "#ccc");
+    }
+
+
 		var line = d3.svg.line()
 								.x(function(d,i){ return x(i); })
-								.y(function(d,i){ return -1.0 * y(d.value) + height; })
+								.y(function(d,i){ 
+                    if (stacked){
+                      return -1.0 * (y(d.value) / y_bands.domain().length) + height - y_bands(d.name); 
+                    } 
+                    else{
+                      return -1.0 * y(d.value) + height;                  
+                    }; })
 								.interpolate("cardinal");
 
 		chart.selectAll("path") 
@@ -231,6 +254,9 @@ var live_charts = function(my) {
 
     // draw function
     my_chart.redraw = function(data_src){
+      if (stacked){
+        y_bands.domain(my_chart.historical_values.map(function (d, i){return d[0].name;}));
+      }
 
       chart.selectAll("path")
         .data(my_chart.historical_values)
@@ -244,6 +270,16 @@ var live_charts = function(my) {
         .data(my_chart.historical_values)
         .exit()
         .remove();
+
+      chart.selectAll("line")
+        .data(my_chart.historical_values)
+        .enter().append("line")
+        .attr("x1", 0)
+        .attr("x2", width)
+        .attr("y1", function(d,i){ return y_bands(d[0].name);})
+        .attr("y2", function(d,i){ return y_bands(d[0].name);})
+        .style("stroke", "#ccc");
+
 
       for (data_set in data_src){
         
