@@ -18,3 +18,9 @@
 .chart text {
   fill: black;
 }
+
+.line_chart {
+	stroke: steelblue;
+	stroke-width: 3;
+	fill: none;
+}

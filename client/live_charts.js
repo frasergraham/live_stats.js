@@ -179,6 +179,80 @@ var live_charts = function(my) {
     return my_chart;
   };
 
+  my.new_line_chart = function(websocket_server, selector, source_set, width, height){
+    var my_chart = {}
+
+    if (typeof my.source_mappings[websocket_server] === 'undefined'){
+      throw websocket_server + " is not connected, call connect_to_data_source() first";
+      return;
+    }
+
+    var width = typeof width !== 'undefined' ? width : 400;
+    var height = typeof height !== 'undefined' ? height : 400;
+
+    var margin = 0;
+    var data = [{value:50}];
+    var chart, x, y;
+    color = d3.scale.category20();
+
+    chart = d3.select(selector)
+      .append("svg:svg")
+      .attr("class", "chart")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")        // this is a group tag
+      .attr("transform", "translate(" + margin + ",00)"); // translate the group together
+
+    // define scales
+    x = d3.scale.linear()
+      .domain([0, 20])
+      .range([margin, width]);
+
+    y = d3.scale.linear()
+      .domain([0,100])
+      .range([0, height]);
+
+		var line = d3.svg.line()
+								.x(function(d,i){ return x(i); })
+								.y(function(d){ return -1.0 * y(d.value) + height; })
+								.interpolate("cardinal");
+
+		chart.selectAll("path")
+			.data([data])
+			.enter()
+			.append("svg:path")
+			.attr("class", "line_chart")
+			.attr('d', line);
+
+    // data storage, we're going to want to store the last X values of everything
+    my_chart.historical_values = [];
+
+    // draw function
+    my_chart.redraw = function(data_src){
+
+      // append new values to historicals
+      my_chart.historical_values.push(data_src[0]);
+
+      if (my_chart.historical_values.length > 20){
+      	my_chart.historical_values.shift();
+				chart.selectAll("path")
+					.data([my_chart.historical_values])
+					.attr("transform", "translate(" + x(1) + ")") 
+					.attr("d", line) 
+					.transition(500) 
+					.attr("transform", "translate(" + x(0) + ")"); 	
+      }
+			else {
+				chart.selectAll("path")
+					.data([my_chart.historical_values])
+					.attr("d", line) 
+			}
+    };
+
+    my.register_data_source(websocket_server, source_set, my_chart.redraw);
+    return my_chart;
+  };
+
   my.new_pie_chart = function(websocket_server, selector, source_set, width, height){
     var my_chart = {};
 
