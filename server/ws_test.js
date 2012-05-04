@@ -32,11 +32,15 @@ wss.on('connection', function(ws) {
 			tmp_rand[set] = random_set;
 		}
 		
-		tmp_rand["OS_STATS"] = [];
+		tmp_rand["Memory"] = [];
 
-		tmp_rand["OS_STATS"].push({"name": "Total Mem", "value": Math.round(((os.totalmem() - os.freemem()) / os.totalmem()) * 100)});
-		tmp_rand["OS_STATS"].push({"name": "Free Mem", "value": Math.round(os.freemem() / os.totalmem() * 100)});
-		tmp_rand["OS_STATS"].push({"name": "Load Avg", "value": Math.round(os.loadavg()[0] * 25)});
+		tmp_rand["Memory"].push({"name": "Used Mem", "value": Math.round(((os.totalmem() - os.freemem()) / os.totalmem()) * 100)});
+		tmp_rand["Memory"].push({"name": "Free Mem", "value": Math.round(os.freemem() / os.totalmem() * 100)});
+
+		tmp_rand["Performance"] = [];
+		tmp_rand["Performance"].push({"name": "Load 1", "value": Math.round(os.loadavg()[0] * 10)});
+		tmp_rand["Performance"].push({"name": "Load 5", "value": Math.round(os.loadavg()[1]) * 10});
+		tmp_rand["Performance"].push({"name": "Load 15", "value": Math.round(os.loadavg()[2]) * 10});
 
 
 		console.log(tmp_rand);
