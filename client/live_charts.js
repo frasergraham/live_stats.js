@@ -322,13 +322,6 @@ var live_charts = function(my) {
           while (len--){
              my_chart.historical_values[data_set][len] = {name:data_src[data_set].name, value:0};
           }
-
-          chart.selectAll("path")
-            .data(my_chart.historical_values)
-            .transition()
-            .ease("linear")
-            .duration(500) 
-            .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
         }
         
         // append new values to historicals, slide old ones off the end
@@ -360,14 +353,6 @@ var live_charts = function(my) {
           if (sum == 0){
             my_chart.historical_values.splice(data_set);
           }
-
-          chart.selectAll("path")
-            .data(my_chart.historical_values)
-            .transition()
-            .ease("linear")
-            .duration(500) 
-            .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
-
         }
       }
 

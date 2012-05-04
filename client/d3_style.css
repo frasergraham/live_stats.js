@@ -17,6 +17,8 @@
 
 .chart text {
   font: 15px sans-serif;
+  font-weight: bold;
+  font-variant: small-caps;
   fill: black;
 }
 

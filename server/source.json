@@ -1,12 +1,26 @@
 {
-	"perf_data": [	"fps",
-					"ms/f",
-					"mem",
-					"tex. mem",
-					"mesh mem",
-					"test",
-					"FRASER"],
+	"group_1": ["Sample A",
+				"Sample B",
+				"Sample C",
+				"Sample D",
+				"Sample E",
+				"Sample F",
+				"Sample G",
+				"Sample H",
+				"Sample I",
+				"Test 1",
+				"Test 2",
+				"Test 3"],
 					
-	"samples2" : ["FUN", "BEER", "BUS", "CAR"]
+	"group_2" : ["WINE", 
+				 "BEER", 
+				 "CHEESE", 
+				 "CHOC"],
+				 
+	"group_3" : ["John", 
+				 "Paul", 
+				 "George", 
+				 "Ringo"]
+
 }
 
