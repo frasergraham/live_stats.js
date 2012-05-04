@@ -179,6 +179,7 @@ var live_charts = function(my) {
     return my_chart;
   };
 
+
   my.new_line_chart = function(websocket_server, selector, source_set, width, height){
     var my_chart = {}
     var stacked = true;
@@ -254,6 +255,7 @@ var live_charts = function(my) {
         .data(my_chart.historical_values)
         .enter()
         .append("svg:path")
+        .attr("id", function(d, i) { return "Path-" + i; })
         .attr("class", "line_chart")
         .attr("stroke", function(d, i) { return color(i); })
         .attr('d', function(d,i){ return line(my_chart.historical_values[i]);} );
@@ -269,9 +271,21 @@ var live_charts = function(my) {
           .enter().append("line")
           .attr("x1", 0)
           .attr("x2", width)
-          .attr("y1", function(d,i){ return y_bands(d[0].name);})
-          .attr("y2", function(d,i){ return y_bands(d[0].name);})
-          .style("stroke", "#ccc");
+          .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+          .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+          .style("stroke", "#ccc");        
+
+        chart.selectAll("line")
+          .data(my_chart.historical_values)
+          .transition()
+          .duration(500)
+          .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+          .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+
+        chart.selectAll("line")
+          .data(my_chart.historical_values)
+          .exit()
+          .remove();
 
         chart.selectAll("text.yAxis")
           .data(my_chart.historical_values)
@@ -283,39 +297,94 @@ var live_charts = function(my) {
           .attr("dy", ".35em") // vertical-align: middle
           .attr("class", "yAxis")
           .text(function(d,i){return String(d[0].name)});
+
+        chart.selectAll("text.yAxis")
+          .data(my_chart.historical_values)
+          .transition()
+          .duration(500)
+          .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+
+        chart.selectAll("text.yAxis")
+          .data(my_chart.historical_values)
+          .exit()
+          .remove();
       }
+
+      var updated = [];
 
       for (data_set in data_src){
         
+        // If this is new data, then make an array for it in the historicals and
+        // pre-fill it with zeroes to that we always slide in from the left
         if (!my_chart.historical_values[data_set]){
           my_chart.historical_values[data_set] = [];
-        }
-        
-        // append new values to historicals
-        my_chart.historical_values[data_set].push(data_src[data_set]);
+          var len = saved_points;
+          while (len--){
+             my_chart.historical_values[data_set][len] = {name:data_src[data_set].name, value:0};
+          }
 
-        if (my_chart.historical_values[data_set].length > saved_points){
-          my_chart.historical_values[data_set].shift();
           chart.selectAll("path")
             .data(my_chart.historical_values)
-            .attr("transform", "translate(" + x(1) + ")") 
-            .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
             .transition()
             .ease("linear")
             .duration(500) 
-            .attr("transform", "translate(" + x(0) + ")");  
+            .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
         }
-        else {
+        
+        // append new values to historicals, slide old ones off the end
+        my_chart.historical_values[data_set].push(data_src[data_set]);
+        my_chart.historical_values[data_set].shift();
+
+        // track the ones we have updated, if something isn't being updated then
+        // the data source has stopped and it needs empty data until we run out
+        updated.push(data_set);
+      }
+
+      for (data_set in my_chart.historical_values){
+        
+        // Provice empty data for sets that have stopped sending
+        if (data_set in updated){
+          continue;
+        }
+        else{
+          var last_entry = my_chart.historical_values[data_set].shift();
+          my_chart.historical_values[data_set].push({name:last_entry.name, value:0});
+         
+          // If a data set has stopped sending, 
+          // once all the values are zero then we should remove it entirely
+          var sum = 0, len =  my_chart.historical_values[data_set].length;
+          while (len--){
+            sum +=  my_chart.historical_values[data_set][len].value;
+          }
+
+          if (sum == 0){
+            my_chart.historical_values.splice(data_set);
+          }
+
           chart.selectAll("path")
             .data(my_chart.historical_values)
-            .attr("d", function(d,i){ return line(my_chart.historical_values[i]);}) 
-        }        
+            .transition()
+            .ease("linear")
+            .duration(500) 
+            .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
+
+        }
       }
+
+      chart.selectAll("path")
+        .data(my_chart.historical_values)
+        .attr("transform", "translate(" + x(1) + ")") 
+        .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
+        .transition()
+        .ease("linear")
+        .duration(500) 
+        .attr("transform", "translate(" + x(0) + ")");  
     };
 
     my.register_data_source(websocket_server, source_set, my_chart.redraw);
     return my_chart;
   };
+
 
   my.new_pie_chart = function(websocket_server, selector, source_set, width, height){
     var my_chart = {};
