@@ -9,7 +9,14 @@
     <script>
       
       $(document).ready(function(){
-     		  live_charts.connect_to_data_source("ws://localhost:8080", live_charts.new_bar_chart);
+     		  var connection = live_charts.connect_to_data_source("ws://localhost:8080", live_charts.new_bar_chart);
+          setTimeout(function(){
+            var sets = connection.get_data_sets();
+              for (var set in sets){
+                console.log(sets[set]);          
+              }
+            }, 1000);
+
 
           live_charts.new_line_chart("ws://localhost:8080", "body", "group_1", 1000, 500);
           live_charts.new_bar_chart("ws://localhost:8080", "body", "group_1", 500, 500);

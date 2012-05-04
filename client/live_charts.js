@@ -8,24 +8,26 @@ var live_charts = function(my) {
   my.source_mappings = {};
 
   my.connect_to_data_source = function(websocket_server, default_chart_factory, default_selector){
+      var my_connection = {};
+
       my.source_mappings[websocket_server] = {};
       
       var establish_connection = function establish_connection(){
 
-        my.connection = new WebSocket(websocket_server, null);
+        my_connection.connection = new WebSocket(websocket_server, null);
 
-        my.connection.onopen = function(){
+        my_connection.connection.onopen = function(){
           console.log("Connected to " + websocket_server);
         };
 
-        my.connection.onclose = function(){
+        my_connection.connection.onclose = function(){
           console.log("Lost Connection: " + websocket_server);
           setTimeout(function(){
             establish_connection();
           }, 5000);
         };
 
-        my.connection.onmessage = function (e) {
+        my_connection.connection.onmessage = function (e) {
           new_data = JSON.parse(e.data);
           for (var set in new_data){
             if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
@@ -46,6 +48,15 @@ var live_charts = function(my) {
 
       }();
 
+      my_connection.get_data_sets = function(){
+        var set_names = [];
+        for (var set_name in my.source_mappings[websocket_server]){
+          set_names.push( set_name );
+        }
+        return set_names;
+      }
+
+      return my_connection;
   };
 
   my.register_data_source = function(websocket_server, source_set, draw_callback){
@@ -213,7 +224,7 @@ var live_charts = function(my) {
       .range([0, height]);
 
     var y_bands;
-    
+
     if (stacked){
       // make some more Y scales
       y_bands = d3.scale.ordinal()
