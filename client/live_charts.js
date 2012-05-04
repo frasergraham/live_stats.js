@@ -208,7 +208,7 @@ var live_charts = function(my) {
     // define scales
     x = d3.scale.linear()
       .domain([0, saved_points])
-      .range([0, width]);
+      .range([0, width - margin + 20]); // the 20 is silly, it makes the chart draw off the end of the SVG area 
 
     y = d3.scale.linear()
       .domain([0,100])
@@ -219,14 +219,6 @@ var live_charts = function(my) {
       y_bands = d3.scale.ordinal()
                   .rangeBands([0,height]);
 
-      // chart.selectAll("line")
-      //   .data(x.ticks(10))
-      //   .enter().append("line")
-      //   .attr("x1", x)
-      //   .attr("x2", x)
-      //   .attr("y1", 0)
-      //   .attr("y2", height)
-      //   .style("stroke", "#ccc");
     }
 
 
