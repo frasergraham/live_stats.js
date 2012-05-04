@@ -231,7 +231,7 @@ var live_charts = function(my) {
                     else{
                       return -1.0 * y(d.value) + height;                  
                     }; })
-								.interpolate("cardinal");
+								.interpolate("monotone");
 
 		chart.selectAll("path") 
 			.data(data)
