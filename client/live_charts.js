@@ -27,9 +27,9 @@ var live_charts = function(my) {
 
         my.connection.onmessage = function (e) {
           new_data = JSON.parse(e.data);
-          for (set in new_data){
+          for (var set in new_data){
             if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
-              for (draw_func in my.source_mappings[websocket_server][set]){
+              for (var draw_func in my.source_mappings[websocket_server][set]){
                 my.source_mappings[websocket_server][set][draw_func](new_data[set]);
               }
             } 
@@ -52,29 +52,27 @@ var live_charts = function(my) {
 
     if (typeof my.source_mappings[websocket_server] === 'undefined'){
       throw websocket_server + " is not connected, call connect_to_data_source() first";
-      return;
     }
 
     if (typeof my.source_mappings[websocket_server][source_set] === 'undefined'){
       my.source_mappings[websocket_server][source_set] = [];
     }
     my.source_mappings[websocket_server][source_set].push(draw_callback);
-  }
+  };
 
   // Charts are created with a server and a place in the DOM to put them
   // All the contents of the chart will come from the server
   // A chart will manage it's own 
   my.new_bar_chart = function(websocket_server, selector, source_set, width, height){
     
-    var my_chart = {}
+    var my_chart = {};
 
     if (typeof my.source_mappings[websocket_server] === 'undefined'){
       throw websocket_server + " is not connected, call connect_to_data_source() first";
-      return;
     }
 
-    var width = typeof width !== 'undefined' ? width : 400;
-    var height = typeof height !== 'undefined' ? height : 400;
+    width = typeof width !== 'undefined' ? width : 400;
+    height = typeof height !== 'undefined' ? height : 400;
 
     var margin_padding = 80;
 
@@ -124,7 +122,7 @@ var live_charts = function(my) {
             .attr("dy", ".35em") // vertical-align: middle
             .attr("text-anchor", "end") // text-align: right
             .attr("class", "label")
-            .text(function(d,i){return String(d.value)});
+            .text(function(d,i){return String(d.value);});
       };
 
       var build_axis = function(d){
@@ -134,7 +132,7 @@ var live_charts = function(my) {
             .attr("dx", 0) // padding-right
             .attr("dy", ".35em") // vertical-align: middle
             .attr("class", "yAxis")
-            .text(function(d,i){return String(d.name)});
+            .text(function(d,i){return String(d.name);});
       };
 
       data = data_src;
@@ -148,7 +146,7 @@ var live_charts = function(my) {
       // BARS
       bars.transition()
         .duration(500)
-        .attr("width", function(d){return x(d.value)})
+        .attr("width", function(d){return x(d.value);})
         .attr("y", function(d,i){ return y(d.name);})
         .attr("height", y.rangeBand());          
 
@@ -158,9 +156,9 @@ var live_charts = function(my) {
       // LABELS
       labels.transition()
         .duration(500)
-        .text(function(d){return String(d.value)})
+        .text(function(d){return String(d.value);})
         .attr("y", function(d,i){ return y(d.name) + y.rangeBand() / 2;})
-        .attr("x", function(d){return x(d.value)});
+        .attr("x", function(d){return x(d.value);});
 
       build_label(labels.enter());
       labels.exit().remove();
@@ -168,7 +166,7 @@ var live_charts = function(my) {
       // AXIS
       axis.transition()
         .duration(500)
-        .attr("y", function(d,i){ return y(d.name) + y.rangeBand() / 2;})
+        .attr("y", function(d,i){ return y(d.name) + y.rangeBand() / 2;});
 
       build_axis(axis.enter());
       axis.exit().remove();
@@ -181,16 +179,15 @@ var live_charts = function(my) {
 
 
   my.new_line_chart = function(websocket_server, selector, source_set, width, height){
-    var my_chart = {}
+    var my_chart = {};
     var stacked = true;
 
     if (typeof my.source_mappings[websocket_server] === 'undefined'){
       throw websocket_server + " is not connected, call connect_to_data_source() first";
-      return;
     }
 
-    var width = typeof width !== 'undefined' ? width : 400;
-    var height = typeof height !== 'undefined' ? height : 400;
+    width = typeof width !== 'undefined' ? width : 400;
+    height = typeof height !== 'undefined' ? height : 400;
 
     var saved_points = 100;
     var margin = 80;
@@ -231,7 +228,8 @@ var live_charts = function(my) {
                     } 
                     else{
                       return -1.0 * y(d.value) + height;                  
-                    }; })
+                    }
+                  })
 								.interpolate("monotone");
 
 		chart.selectAll("path") 
@@ -280,7 +278,7 @@ var live_charts = function(my) {
           .transition()
           .duration(500)
           .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-          .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+          .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
 
         chart.selectAll("line")
           .data(my_chart.historical_values)
@@ -296,13 +294,13 @@ var live_charts = function(my) {
           .attr("dx", 0) // padding-right
           .attr("dy", ".35em") // vertical-align: middle
           .attr("class", "yAxis")
-          .text(function(d,i){return String(d[0].name)});
+          .text(function(d,i){return String(d[0].name);});
 
         chart.selectAll("text.yAxis")
           .data(my_chart.historical_values)
           .transition()
           .duration(500)
-          .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+          .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; });
 
         chart.selectAll("text.yAxis")
           .data(my_chart.historical_values)
@@ -312,7 +310,7 @@ var live_charts = function(my) {
 
       var updated = [];
 
-      for (data_set in data_src){
+      for (var data_set in data_src){
         
         // If this is new data, then make an array for it in the historicals and
         // pre-fill it with zeroes to that we always slide in from the left
@@ -333,25 +331,25 @@ var live_charts = function(my) {
         updated.push(data_set);
       }
 
-      for (data_set in my_chart.historical_values){
+      for (var set in my_chart.historical_values){
         
         // Provice empty data for sets that have stopped sending
-        if (data_set in updated){
+        if (set in updated){
           continue;
         }
         else{
-          var last_entry = my_chart.historical_values[data_set].shift();
-          my_chart.historical_values[data_set].push({name:last_entry.name, value:0});
+          var last_entry = my_chart.historical_values[set].shift();
+          my_chart.historical_values[set].push({name:last_entry.name, value:0});
          
           // If a data set has stopped sending, 
           // once all the values are zero then we should remove it entirely
-          var sum = 0, len =  my_chart.historical_values[data_set].length;
-          while (len--){
-            sum +=  my_chart.historical_values[data_set][len].value;
+          var sum = 0, index =  my_chart.historical_values[set].length;
+          while (index--){
+            sum +=  my_chart.historical_values[set][index].value;
           }
 
-          if (sum == 0){
-            my_chart.historical_values.splice(data_set);
+          if (sum === 0){
+            my_chart.historical_values.splice(set);
           }
         }
       }
@@ -374,19 +372,20 @@ var live_charts = function(my) {
   my.new_pie_chart = function(websocket_server, selector, source_set, width, height){
     var my_chart = {};
 
-    var width = typeof width !== 'undefined' ? width : 400;
-    var height = typeof height !== 'undefined' ? height : 400;
+    width = typeof width !== 'undefined' ? width : 400;
+    height = typeof height !== 'undefined' ? height : 400;
 
-    outerRadius = Math.min(width, height) / 2,
-    innerRadius = outerRadius * .0,
-    color = d3.scale.category20(),
-    donut = d3.layout.pie().value(function(d){ return d.value;}).sort(null),
+    outerRadius = Math.min(width, height) / 2;
+    innerRadius = outerRadius * 0.0;
+    color = d3.scale.category20();
+    donut = d3.layout.pie().value(function(d){ return d.value;}).sort(null);
+
     arc = d3.svg.arc()
             .innerRadius(innerRadius)
             .outerRadius(outerRadius);
 
     label_arc = d3.svg.arc()
-            .innerRadius(outerRadius * .6)
+            .innerRadius(outerRadius * 0.6)
             .outerRadius(outerRadius);
     
     data = [];
@@ -404,7 +403,7 @@ var live_charts = function(my) {
 
       var e = vis.selectAll("g.arc")
         .data(donut)
-        .enter()
+        .enter();
       
       e.append("g")
         .attr("class", "arc")
@@ -412,7 +411,7 @@ var live_charts = function(my) {
       .append("path")
         .attr("fill", function(d, i) { return color(i); })
         .attr("d", arc)
-      .each(function(d) { this._current = d;})
+      .each(function(d) { this._current = d;});
 
       e.append("g")
         .attr("class", "label")
@@ -421,10 +420,10 @@ var live_charts = function(my) {
         .attr("class", "label")
         .attr("text-anchor", "middle")
         .attr("transform", function(d){
-            d.innerRadius = innerRadius
+            d.innerRadius = innerRadius;
             d.outerRadius = outerRadius;
             return "translate(" + label_arc.centroid(d) + ")";})
-        .text(function(d){return d.data.name});
+        .text(function(d){return d.data.name;});
 
 
       vis.selectAll("g.arc")
@@ -432,7 +431,7 @@ var live_charts = function(my) {
       .select("path")
         .transition()
         .duration(500)
-        .attrTween("d", arcTween)
+        .attrTween("d", arcTween);
       
       vis.selectAll("g.label")
         .data(donut)
@@ -440,7 +439,7 @@ var live_charts = function(my) {
         .transition()
         .duration(500)
         .attr("transform", function(d){ return "translate(" + label_arc.centroid(d) + ")";})
-        .text(function(d){return d.data.name});
+        .text(function(d){return d.data.name;});
 
       vis.selectAll("g.arc")
         .data(donut)

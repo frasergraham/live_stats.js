@@ -7,10 +7,10 @@ live_stats Client TODO
 		X Multi Line
 		X Animating
 		- Key
-		- Labels
+		X Labels
 		- Tooltips
-		- enter/exit smooth
-		- stacked vs overlaid
+		X enter/exit smooth
+		O stacked vs overlaid
 	O Pie
 		X static
 		X dynamic
@@ -21,8 +21,6 @@ live_stats Client TODO
 - Template page that's prettier
 
 - limits on the meter chart
-- Draw borders? leave that to CSS?
-
 
 - Docs
 	- Client README
