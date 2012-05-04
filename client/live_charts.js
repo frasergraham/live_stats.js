@@ -204,14 +204,16 @@ var live_charts = function(my) {
       .attr("transform", "translate(" + margin + ",5)"); // translate the group together
 
     // define scales
-    x = d3.scale.linear()
+    var x = d3.scale.linear()
       .domain([0, saved_points])
       .range([0, width - margin + 20]); // the 20 is silly, it makes the chart draw off the end of the SVG area 
 
-    y = d3.scale.linear()
+    var y = d3.scale.linear()
       .domain([0,100])
       .range([0, height]);
 
+    var y_bands;
+    
     if (stacked){
       // make some more Y scales
       y_bands = d3.scale.ordinal()
