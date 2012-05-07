@@ -1,0 +1,42 @@
+<doctype html>
+<html>
+  <head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+		<script type="text/javascript" src="d3.v2.js"></script>
+		<script type="text/javascript" src="live_charts.js"></script>
+    <link rel="stylesheet" type="text/css" href="d3_style.css">
+
+    <script>
+      
+      $(document).ready(function(){
+
+          live_charts.default_width(1000)
+                     .default_height(200)
+                     .default_transition_delay(500);
+
+ 	      var data_src = live_charts.connect_to_data_source("ws://localhost:8080");
+
+          data_src.set_default_chart(data_src.bar_chart);   // Provide function to call for any unassigned data
+
+          data_src.get_groups();
+
+          var chart = data_src.line_chart("body")    // Returns a chart object
+                        .set_source("group_1")
+                        .width(300)
+                        .height(1000)
+                        .range("auto")             // Updted based on data
+                        .range([-100, 100])
+                        .update_freq(500)
+                        .update_freq("auto");       // Updated based on average gap between last X updates
+
+
+
+        });
+
+    </script>
+
+  </head>
+  <body>
+
+  </body>
+</html>
