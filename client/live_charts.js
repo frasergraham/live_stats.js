@@ -7,6 +7,32 @@ var live_charts = function(my) {
   // Store which data sources refresh which graphs
   my.source_mappings = {};
 
+  // default_selector
+  var default_transition_delay = 500;
+  var default_width = 400;
+  var default_height = 400;
+
+  // Functions to set or retrieve the defaults for all charts
+  my.default_width = function(width){
+    if (!arguments.length) return default_width;
+    default_width = width;
+    return my;
+  }
+
+  my.default_height = function(height){
+    if (!arguments.length) return default_height;
+    default_height = height;
+    return my;
+  }
+
+  my.default_transition_delay = function(delay){
+    if (!arguments.length) return default_transition_delay;
+    default_transition_delay = delay;
+    return my;
+  }
+
+
+
   my.connect_to_data_source = function(websocket_server, default_chart_factory, default_selector){
       var my_connection = {};
 
@@ -82,8 +108,8 @@ var live_charts = function(my) {
       throw websocket_server + " is not connected, call connect_to_data_source() first";
     }
 
-    width = typeof width !== 'undefined' ? width : 400;
-    height = typeof height !== 'undefined' ? height : 400;
+    width = typeof width !== 'undefined' ? width : my.default_width;
+    height = typeof height !== 'undefined' ? height : my.default_height;
 
     var margin_padding = 80;
 
@@ -156,7 +182,7 @@ var live_charts = function(my) {
 
       // BARS
       bars.transition()
-        .duration(500)
+        .duration(default_transition_delay)
         .attr("width", function(d){return x(d.value);})
         .attr("y", function(d,i){ return y(d.name);})
         .attr("height", y.rangeBand());          
@@ -166,7 +192,7 @@ var live_charts = function(my) {
 
       // LABELS
       labels.transition()
-        .duration(500)
+        .duration(default_transition_delay)
         .text(function(d){return String(d.value);})
         .attr("y", function(d,i){ return y(d.name) + y.rangeBand() / 2;})
         .attr("x", function(d){return x(d.value);});
@@ -176,7 +202,7 @@ var live_charts = function(my) {
 
       // AXIS
       axis.transition()
-        .duration(500)
+        .duration(default_transition_delay)
         .attr("y", function(d,i){ return y(d.name) + y.rangeBand() / 2;});
 
       build_axis(axis.enter());
@@ -289,7 +315,7 @@ var live_charts = function(my) {
         chart.selectAll("line")
           .data(my_chart.historical_values)
           .transition()
-          .duration(500)
+          .duration(default_transition_delay)
           .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
           .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
 
@@ -312,7 +338,7 @@ var live_charts = function(my) {
         chart.selectAll("text.yAxis")
           .data(my_chart.historical_values)
           .transition()
-          .duration(500)
+          .duration(default_transition_delay)
           .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; });
 
         chart.selectAll("text.yAxis")
@@ -373,7 +399,7 @@ var live_charts = function(my) {
         .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
         .transition()
         .ease("linear")
-        .duration(500) 
+        .duration(default_transition_delay) 
         .attr("transform", "translate(" + x(0) + ")");  
     };
 
@@ -443,14 +469,14 @@ var live_charts = function(my) {
         .data(donut)
       .select("path")
         .transition()
-        .duration(500)
+        .duration(default_transition_delay)
         .attrTween("d", arcTween);
       
       vis.selectAll("g.label")
         .data(donut)
         .select("text")
         .transition()
-        .duration(500)
+        .duration(default_transition_delay)
         .attr("transform", function(d){ return "translate(" + label_arc.centroid(d) + ")";})
         .text(function(d){return d.data.name;});
 
