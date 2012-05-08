@@ -20,15 +20,11 @@
 
           data_src.get_groups();
 
-          var chart = data_src.line_chart("body")    // Returns a chart object
-                        .set_source("group_1")
+          var chart = data_src.line_chart()    // Returns a chart object
                         .width(300)
                         .height(1000)
-                        .range("auto")             // Updted based on data
-                        .range([-100, 100])
-                        .update_freq(500)
-                        .update_freq("auto");       // Updated based on average gap between last X updates
-
+                        .data_source("group_1");
+                        
 
 
         });

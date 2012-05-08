@@ -3,29 +3,41 @@ live_stats Client TODO
 
 - Different Chart Types
 	O Line
-		X Basics
-		X Multi Line
-		X Animating
-		- Key
-		X Labels
-		- Tooltips
-		X enter/exit smooth
+		- Key for overlays
+		- Tooltips on points
 		O stacked vs overlaid
+        - Proper Axis
+        - Display numerical value of most recent entry at end of stacked chart
+        - Use clip paths to hide ugly transition artifacts
+        - Use time labels on the axis?
+
 	O Pie
-		X static
-		X dynamic
-		X Labels
 		- Key
 
-- CSS or other styling options
-- Template page that's prettier
+    O Bar
+        - Handle text overlay on labels
+    
+    - All Charts
+        - Proper handling of margins
+        - Consistent CSS class names
+        - Consistent code patterns for enter, update, exit
+        - Headers and labels (show data source and group?)
+    
 
-- limits on the meter chart
+- API
+    - Refactor to use closures and method chaining
+    - What happens when I pass a selector other than body that matches multiples?
+    - Charts as plugin modules?
+    - chart creation as a function on the data source object
+    - Tolarance of bad data
 
 - Docs
-	- Client README
-	- Server README
+    - Client README
+    - Server README
+
 
 - Tests
-- JSHint
-- Minify
+    - Test Multiple server sources
+
+
+- Auto Minify as a Git hook?
