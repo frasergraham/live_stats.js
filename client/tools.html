@@ -12,8 +12,8 @@
           var connection = live_charts.connect_to_data_source("ws://localhost:8080");
 
           var test_line = connection.line_chart()
-                                .width(1000)
-                                .height(300)
+                                .width(400)
+                                .height(500)
                                 .data_source("group_1")
                                 .bind("#test_line");
           
@@ -34,8 +34,8 @@
               for (var set in sets){
                 console.log(sets[set]);          
               }
-              test_line.width(600);
-              test_line.height(200);
+              test_line.width(1000);
+              test_line.height(300);
               test_bar.width(600);
               test_bar.height(200);
               test_pie.width(400);
