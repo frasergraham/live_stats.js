@@ -26,7 +26,6 @@ live_stats Client TODO
 
 - API
     - Refactor to use closures and method chaining
-    - What happens when I pass a selector other than body that matches multiples?
     - Charts as plugin modules?
     - chart creation as a function on the data source object
     - Tolarance of bad data

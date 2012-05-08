@@ -102,15 +102,14 @@ var live_charts = function(my) {
     my.source_mappings[websocket_server][source_set].push(draw_callback);
   };
 
+
   // Charts are created with a server and a place in the DOM to put them
   // All the contents of the chart will come from the server
-  // A chart will manage it's own   
-  Connection.prototype.bar_chart = function(){
+  Connection.prototype.bar_chart = function bar_chart(){
     var width = default_width
     var height = default_height;
-    var data_source = null;
-    var range = 'auto';
     var transition_delay = default_transition_delay;
+    var data_source = null;
     var server = this.server;
 
     var my_chart = function my_chart(selector){
@@ -237,225 +236,269 @@ var live_charts = function(my) {
 
       return my_chart;
     };
-    
+
     my_chart.width = function(value){
       if (!arguments.length) return width;
       width = value;
-      return my_chart;
+      return this;
     };
 
     my_chart.height = function(value){
       if (!arguments.length) return height;
       height = value;
-      return my_chart;
+      return this;
     };
 
     my_chart.data_source = function(value){
       if (!arguments.length) return my_chart.data_source;
       data_source = value;
       // TODO - deregister source and register new source
-      return my_chart;
+      return this;
     };
 
     // Create the chart in the specified location in the DOM
     my_chart.bind = function(selector){
-      return my_chart(selector);
-    }
+      return this(selector);
+    };
 
     return my_chart;
   }
 
-  my.new_line_chart = function(websocket_server, selector, source_set, width, height){
-    var my_chart = {};
-    var stacked = true;
+  Connection.prototype.line_chart = function line_chart(){
+    var width = default_width
+    var height = default_height;
+    var transition_delay = default_transition_delay;
+    var data_source = null;
+    var server = this.server;
 
-    if (typeof my.source_mappings[websocket_server] === 'undefined'){
-      throw websocket_server + " is not connected, call connect_to_data_source() first";
-    }
+    var my_chart = function my_chart(selector){
+      var my_line_chart = {};
+      var stacked = true;
+      var saved_points = 100;
+      var margin = 80;
+      var data = [];
+      var chart, x, y;
+      color = d3.scale.category20();
 
-    width = typeof width !== 'undefined' ? width : 400;
-    height = typeof height !== 'undefined' ? height : 400;
+      chart = d3.select(selector)
+        .append("svg:svg")
+        .attr("class", "chart")
+        .attr("width", width + 10)
+        .attr("height", height + 10)
+        .append("g")        // this is a group tag
+        .attr("transform", "translate(" + margin + ",5)"); // translate the group together
 
-    var saved_points = 100;
-    var margin = 80;
-    var data = [];
-    var chart, x, y;
-    color = d3.scale.category20();
+      // define scales
+      var x = d3.scale.linear()
+        .domain([0, saved_points])
+        .range([0, width - margin + 20]); // the 20 is silly, it makes the chart draw off the end of the SVG area 
 
-    chart = d3.select(selector)
-      .append("svg:svg")
-      .attr("class", "chart")
-      .attr("width", width + 10)
-      .attr("height", height + 10)
-      .append("g")        // this is a group tag
-      .attr("transform", "translate(" + margin + ",5)"); // translate the group together
+      var y = d3.scale.linear()
+        .domain([0,100])
+        .range([0, height]);
 
-    // define scales
-    var x = d3.scale.linear()
-      .domain([0, saved_points])
-      .range([0, width - margin + 20]); // the 20 is silly, it makes the chart draw off the end of the SVG area 
+      var y_bands;
 
-    var y = d3.scale.linear()
-      .domain([0,100])
-      .range([0, height]);
-
-    var y_bands;
-
-    if (stacked){
-      // make some more Y scales
-      y_bands = d3.scale.ordinal()
-                  .rangeBands([0,height]);
-
-    }
-
-
-		var line = d3.svg.line()
-								.x(function(d,i){ return x(i); })
-								.y(function(d,i){ 
-                    if (stacked){
-                      return -1.0 * (y(d.value) / y_bands.domain().length) + height - y_bands(d.name); 
-                    } 
-                    else{
-                      return -1.0 * y(d.value) + height;                  
-                    }
-                  })
-								.interpolate("monotone");
-
-		chart.selectAll("path") 
-			.data(data)
-			.enter()
-			.append("svg:path")
-			.attr("class", "line_chart")
-      .attr("stroke", function(d, i) { return color(i); })
-			.attr('d', function(d,i){ return line(data[i]);} );
-
-    // data storage, we're going to want to store the last X values of everything
-    my_chart.historical_values = [];
-
-    // draw function
-    my_chart.redraw = function(data_src){
       if (stacked){
-        y_bands.domain(my_chart.historical_values.map(function (d, i){return d[0].name;}));
+        // make some more Y scales
+        y_bands = d3.scale.ordinal()
+                    .rangeBands([0,height]);
+
       }
 
-      chart.selectAll("path")
-        .data(my_chart.historical_values)
+
+      var line = d3.svg.line()
+                  .x(function(d,i){ return x(i); })
+                  .y(function(d,i){ 
+                      if (stacked){
+                        return -1.0 * (y(d.value) / y_bands.domain().length) + height - y_bands(d.name); 
+                      } 
+                      else{
+                        return -1.0 * y(d.value) + height;                  
+                      }
+                    })
+                  .interpolate("monotone");
+
+      chart.selectAll("path") 
+        .data(data)
         .enter()
         .append("svg:path")
-        .attr("id", function(d, i) { return "Path-" + i; })
         .attr("class", "line_chart")
         .attr("stroke", function(d, i) { return color(i); })
-        .attr('d', function(d,i){ return line(my_chart.historical_values[i]);} );
+        .attr('d', function(d,i){ return line(data[i]);} );
 
-      chart.selectAll("path")
-        .data(my_chart.historical_values)
-        .exit()
-        .remove();
+      // data storage, we're going to want to store the last X values of everything
+      my_line_chart.historical_values = [];
 
-      if (stacked){
-        chart.selectAll("line")
-          .data(my_chart.historical_values)
-          .enter().append("line")
-          .attr("x1", 0)
-          .attr("x2", width)
-          .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-          .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-          .style("stroke", "#ccc");        
-
-        chart.selectAll("line")
-          .data(my_chart.historical_values)
+      // draw function
+      my_line_chart.redraw = function(data_src){
+        
+        d3.select(selector)
+          .select("svg.chart")
           .transition()
-          .duration(default_transition_delay)
-          .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-          .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
+          .duration(transition_delay)
+          .attr("width", width + 10)
+          .attr("height", height + 10);
+        
+        x.domain([0, saved_points])
+         .range([0, width - margin + 20]); // the 20 is silly, it makes the chart draw off the end of the SVG area 
 
-        chart.selectAll("line")
-          .data(my_chart.historical_values)
-          .exit()
-          .remove();
+        y.domain([0,100])
+         .range([0, height]);
 
-        chart.selectAll("text.yAxis")
-          .data(my_chart.historical_values)
+        if (stacked){
+          y_bands.domain(my_line_chart.historical_values.map(function (d, i){return d[0].name;}))
+                    .rangeBands([0,height]);
+        }
+
+        chart.selectAll("path")
+          .data(my_line_chart.historical_values)
           .enter()
-          .append("svg:text")
-          .attr("x", -margin)
-          .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-          .attr("dx", 0) // padding-right
-          .attr("dy", ".35em") // vertical-align: middle
-          .attr("class", "yAxis")
-          .text(function(d,i){return String(d[0].name);});
+          .append("svg:path")
+          .attr("id", function(d, i) { return "Path-" + i; })
+          .attr("class", "line_chart")
+          .attr("stroke", function(d, i) { return color(i); })
+          .attr('d', function(d,i){ return line(my_line_chart.historical_values[i]);} );
 
-        chart.selectAll("text.yAxis")
-          .data(my_chart.historical_values)
-          .transition()
-          .duration(default_transition_delay)
-          .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; });
-
-        chart.selectAll("text.yAxis")
-          .data(my_chart.historical_values)
+        chart.selectAll("path")
+          .data(my_line_chart.historical_values)
           .exit()
           .remove();
-      }
 
-      var updated = [];
+        if (stacked){
+          chart.selectAll("line")
+            .data(my_line_chart.historical_values)
+            .enter().append("line")
+            .attr("x1", 0)
+            .attr("x2", width - margin)
+            .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+            .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+            .style("stroke", "#ccc");        
 
-      for (var data_set in data_src){
-        
-        // If this is new data, then make an array for it in the historicals and
-        // pre-fill it with zeroes to that we always slide in from the left
-        if (!my_chart.historical_values[data_set]){
-          my_chart.historical_values[data_set] = [];
-          var len = saved_points;
-          while (len--){
-             my_chart.historical_values[data_set][len] = {name:data_src[data_set].name, value:0};
+          chart.selectAll("line")
+            .data(my_line_chart.historical_values)
+            .transition()
+            .duration(default_transition_delay)
+            .attr("x1", 0)
+            .attr("x2", width)
+            .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+            .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
+
+          chart.selectAll("line")
+            .data(my_line_chart.historical_values)
+            .exit()
+            .remove();
+
+          chart.selectAll("text.yAxis")
+            .data(my_line_chart.historical_values)
+            .enter()
+            .append("svg:text")
+            .attr("x", -margin)
+            .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+            .attr("dx", 0) // padding-right
+            .attr("dy", ".35em") // vertical-align: middle
+            .attr("class", "yAxis")
+            .text(function(d,i){return String(d[0].name);});
+
+          chart.selectAll("text.yAxis")
+            .data(my_line_chart.historical_values)
+            .transition()
+            .duration(default_transition_delay)
+            .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; });
+
+          chart.selectAll("text.yAxis")
+            .data(my_line_chart.historical_values)
+            .exit()
+            .remove();
+        }
+
+        var updated = [];
+
+        for (var data_set in data_src){
+          
+          // If this is new data, then make an array for it in the historicals and
+          // pre-fill it with zeroes to that we always slide in from the left
+          if (!my_line_chart.historical_values[data_set]){
+            my_line_chart.historical_values[data_set] = [];
+            var len = saved_points;
+            while (len--){
+               my_line_chart.historical_values[data_set][len] = {name:data_src[data_set].name, value:0};
+            }
+          }
+          
+          // append new values to historicals, slide old ones off the end
+          my_line_chart.historical_values[data_set].push(data_src[data_set]);
+          my_line_chart.historical_values[data_set].shift();
+
+          // track the ones we have updated, if something isn't being updated then
+          // the data source has stopped and it needs empty data until we run out
+          updated.push(data_set);
+        }
+
+        for (var set in my_line_chart.historical_values){
+          
+          // Provice empty data for sets that have stopped sending
+          if (set in updated){
+            continue;
+          }
+          else{
+            var last_entry = my_line_chart.historical_values[set].shift();
+            my_line_chart.historical_values[set].push({name:last_entry.name, value:0});
+           
+            // If a data set has stopped sending, 
+            // once all the values are zero then we should remove it entirely
+            var sum = 0, index =  my_line_chart.historical_values[set].length;
+            while (index--){
+              sum +=  my_line_chart.historical_values[set][index].value;
+            }
+
+            if (sum === 0){
+              my_line_chart.historical_values.splice(set);
+            }
           }
         }
-        
-        // append new values to historicals, slide old ones off the end
-        my_chart.historical_values[data_set].push(data_src[data_set]);
-        my_chart.historical_values[data_set].shift();
 
-        // track the ones we have updated, if something isn't being updated then
-        // the data source has stopped and it needs empty data until we run out
-        updated.push(data_set);
-      }
+        chart.selectAll("path")
+          .data(my_line_chart.historical_values)
+          .attr("transform", "translate(" + x(1) + ")") 
+          .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})  
+          .transition()
+          .ease("linear")
+          .duration(default_transition_delay) 
+          .attr("transform", "translate(" + x(0) + ")");  
+      };
 
-      for (var set in my_chart.historical_values){
-        
-        // Provice empty data for sets that have stopped sending
-        if (set in updated){
-          continue;
-        }
-        else{
-          var last_entry = my_chart.historical_values[set].shift();
-          my_chart.historical_values[set].push({name:last_entry.name, value:0});
-         
-          // If a data set has stopped sending, 
-          // once all the values are zero then we should remove it entirely
-          var sum = 0, index =  my_chart.historical_values[set].length;
-          while (index--){
-            sum +=  my_chart.historical_values[set][index].value;
-          }
+      my.register_data_source(server, data_source, my_line_chart.redraw);
+      return my_chart;
 
-          if (sum === 0){
-            my_chart.historical_values.splice(set);
-          }
-        }
-      }
-
-      chart.selectAll("path")
-        .data(my_chart.historical_values)
-        .attr("transform", "translate(" + x(1) + ")") 
-        .attr("d", function(d,i){ return line(my_chart.historical_values[i]);})  
-        .transition()
-        .ease("linear")
-        .duration(default_transition_delay) 
-        .attr("transform", "translate(" + x(0) + ")");  
     };
 
-    my.register_data_source(websocket_server, source_set, my_chart.redraw);
+    my_chart.width = function(value){
+      if (!arguments.length) return width;
+      width = value;
+      return this;
+    };
+
+    my_chart.height = function(value){
+      if (!arguments.length) return height;
+      height = value;
+      return this;
+    };
+
+    my_chart.data_source = function(value){
+      if (!arguments.length) return my_chart.data_source;
+      data_source = value;
+      // TODO - deregister source and register new source
+      return this;
+    };
+
+    // Create the chart in the specified location in the DOM
+    my_chart.bind = function(selector){
+      return this(selector);
+    };
+
     return my_chart;
-  };
+  }
 
 
   my.new_pie_chart = function(websocket_server, selector, source_set, width, height){

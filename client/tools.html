@@ -10,22 +10,30 @@
       
       $(document).ready(function(){
           var connection = live_charts.connect_to_data_source("ws://localhost:8080");
-          var test = connection.bar_chart()
+
+          var test_line = connection.line_chart()
+                                .width(1000)
+                                .height(300)
+                                .data_source("group_1")
+                                .bind("#test_line");
+          
+          var test_bar = connection.bar_chart()
                                 .width(200)
                                 .height(300)
                                 .data_source("group_1")
-                                .bind("body");
-          
+                                .bind("#test_bar");
+
           setTimeout(function(){
             var sets = connection.get_data_sets();
               for (var set in sets){
                 console.log(sets[set]);          
               }
-              test.width(600);
-              test.height(200);
+              test_line.width(600);
+              test_line.height(200);
+              // test_bar.width(600);
+              // test_bar.height(200);
                 
             }, 5000);
-
 
           // live_charts.new_line_chart("ws://localhost:8080", "body", "group_1", 1000, 500);
           // live_charts.new_pie_chart("ws://localhost:8080", "body", "group_1", 500, 500);
@@ -37,6 +45,7 @@
 
   </head>
   <body>
-
+    <p id="test_line"></p>
+    <p id="test_bar"></p>
   </body>
 </html>
