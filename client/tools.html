@@ -23,6 +23,12 @@
                                 .data_source("group_1")
                                 .bind("#test_bar");
 
+          var test_pie = connection.pie_chart()
+                                .width(200)
+                                .height(200)
+                                .data_source("group_1")
+                                .bind("#test_pie");
+
           setTimeout(function(){
             var sets = connection.get_data_sets();
               for (var set in sets){
@@ -30,8 +36,10 @@
               }
               test_line.width(600);
               test_line.height(200);
-              // test_bar.width(600);
-              // test_bar.height(200);
+              test_bar.width(600);
+              test_bar.height(200);
+              test_pie.width(400);
+              test_pie.height(400);
                 
             }, 5000);
 
@@ -47,5 +55,6 @@
   <body>
     <p id="test_line"></p>
     <p id="test_bar"></p>
+    <p id="test_pie"></p>
   </body>
 </html>

@@ -291,7 +291,7 @@ var live_charts = function(my) {
       // define scales
       var x = d3.scale.linear()
         .domain([0, saved_points])
-        .range([0, width - margin + 20]); // the 20 is silly, it makes the chart draw off the end of the SVG area 
+        .range([0, width - margin]); 
 
       var y = d3.scale.linear()
         .domain([0,100])
@@ -341,7 +341,7 @@ var live_charts = function(my) {
           .attr("height", height + 10);
         
         x.domain([0, saved_points])
-         .range([0, width - margin + 20]); // the 20 is silly, it makes the chart draw off the end of the SVG area 
+         .range([0, width - margin]); 
 
         y.domain([0,100])
          .range([0, height]);
@@ -380,7 +380,7 @@ var live_charts = function(my) {
             .transition()
             .duration(default_transition_delay)
             .attr("x1", 0)
-            .attr("x2", width)
+            .attr("x2", width - margin)
             .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
             .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
 
@@ -500,104 +500,149 @@ var live_charts = function(my) {
     return my_chart;
   }
 
+  Connection.prototype.pie_chart = function pie_chart(){
+    var width = default_width
+    var height = default_height;
+    var transition_delay = default_transition_delay;
+    var data_source = null;
+    var server = this.server;
 
-  my.new_pie_chart = function(websocket_server, selector, source_set, width, height){
-    var my_chart = {};
+    var my_chart = function my_chart(selector){
+      var my_pie_chart = {};
 
-    width = typeof width !== 'undefined' ? width : 400;
-    height = typeof height !== 'undefined' ? height : 400;
+      outerRadius = Math.min(width, height) / 2;
+      innerRadius = outerRadius * 0.0;
+      color = d3.scale.category20();
+      donut = d3.layout.pie().value(function(d){ return d.value;}).sort(null);
 
-    outerRadius = Math.min(width, height) / 2;
-    innerRadius = outerRadius * 0.0;
-    color = d3.scale.category20();
-    donut = d3.layout.pie().value(function(d){ return d.value;}).sort(null);
+      arc = d3.svg.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(outerRadius);
 
-    arc = d3.svg.arc()
-            .innerRadius(innerRadius)
-            .outerRadius(outerRadius);
-
-    label_arc = d3.svg.arc()
-            .innerRadius(outerRadius * 0.6)
-            .outerRadius(outerRadius);
-    
-    data = [];
-
-    var vis = d3.select("body")
-      .append("svg")
-        .data([data])
-        .attr("class", "smooth_chart")
-        .attr("width", width)
-        .attr("height", height);
-
-    my_chart.redraw = function(data_src){
-
-      vis.data([data_src]);
-
-      var e = vis.selectAll("g.arc")
-        .data(donut)
-        .enter();
+      label_arc = d3.svg.arc()
+        .innerRadius(outerRadius * 0.6)
+        .outerRadius(outerRadius);
       
-      e.append("g")
-        .attr("class", "arc")
-        .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
-      .append("path")
-        .attr("fill", function(d, i) { return color(i); })
-        .attr("d", arc)
-      .each(function(d) { this._current = d;});
+      data = [];
 
-      e.append("g")
-        .attr("class", "label")
-        .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
-      .append("svg:text")
-        .attr("class", "label")
-        .attr("text-anchor", "middle")
-        .attr("transform", function(d){
-            d.innerRadius = innerRadius;
-            d.outerRadius = outerRadius;
-            return "translate(" + label_arc.centroid(d) + ")";})
-        .text(function(d){return d.data.name;});
+      var vis = d3.select("body")
+        .append("svg")
+          .data([data])
+          .attr("class", "smooth_chart")
+          .attr("width", width)
+          .attr("height", height);
 
 
-      vis.selectAll("g.arc")
-        .data(donut)
-      .select("path")
-        .transition()
-        .duration(default_transition_delay)
-        .attrTween("d", arcTween);
-      
-      vis.selectAll("g.label")
-        .data(donut)
-        .select("text")
-        .transition()
-        .duration(default_transition_delay)
-        .attr("transform", function(d){ return "translate(" + label_arc.centroid(d) + ")";})
-        .text(function(d){return d.data.name;});
+     my_pie_chart.redraw = function(data_src){
+        outerRadius = Math.min(width, height) / 2;
+        innerRadius = outerRadius * 0.0;
+  
+        arc.innerRadius(innerRadius)
+          .outerRadius(outerRadius);
 
-      vis.selectAll("g.arc")
-        .data(donut)
-        .exit()
-        .remove();
+        label_arc.innerRadius(outerRadius * 0.6)
+          .outerRadius(outerRadius);
+
+        vis.data([data_src])
+          .transition()
+          .duration(transition_delay)
+          .attr("width", width)
+          .attr("height", height);
+
+        var e = vis.selectAll("g.arc")
+          .data(donut)
+          .enter();
         
-      vis.selectAll("g.label")
-        .data(donut)
-        .exit()
-        .remove();
+        e.append("g")
+          .attr("class", "arc")
+        .append("path")
+          .attr("fill", function(d, i) { return color(i); })
+          .attr("d", arc)
+        .each(function(d) { this._current = d;});
+
+        e.append("g")
+          .attr("class", "label")
+          .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+        .append("svg:text")
+          .attr("class", "label")
+          .attr("text-anchor", "middle")
+          .attr("transform", function(d){
+              d.innerRadius = innerRadius;
+              d.outerRadius = outerRadius;
+              return "translate(" + label_arc.centroid(d) + ")";})
+          .text(function(d){return d.data.name;});
+
+
+        vis.selectAll("g.arc")
+          .data(donut)
+        .select("path")
+          .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+          .transition()
+          .duration(transition_delay)
+          .attrTween("d", arcTween);
+        
+        vis.selectAll("g.label")
+          .data(donut)
+          .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+          .select("text")
+          .transition()
+          .duration(transition_delay)
+          .attr("transform", function(d){ return "translate(" + label_arc.centroid(d) + ")";})
+          .text(function(d){return d.data.name;});
+
+        vis.selectAll("g.arc")
+          .data(donut)
+          .exit()
+          .remove();
+          
+        vis.selectAll("g.label")
+          .data(donut)
+          .exit()
+          .remove();
+
+      };
+
+      // Store the currently-displayed angles in this._current.
+      // Then, interpolate from this._current to the new angles.
+      function arcTween(a) {
+        var i = d3.interpolate(this._current, a);
+        this._current = i(0);
+        return function(t) {
+          return arc(i(t));
+        };
+      }
+
+      my.register_data_source(server, data_source, my_pie_chart.redraw);
+      return my_chart;    
 
     };
 
-    // Store the currently-displayed angles in this._current.
-    // Then, interpolate from this._current to the new angles.
-    function arcTween(a) {
-      var i = d3.interpolate(this._current, a);
-      this._current = i(0);
-      return function(t) {
-        return arc(i(t));
-      };
-    }
+    my_chart.width = function(value){
+      if (!arguments.length) return width;
+      width = value;
+      return this;
+    };
 
-    my.register_data_source(websocket_server, source_set, my_chart.redraw);
-    return my_chart;    
-  };
+    my_chart.height = function(value){
+      if (!arguments.length) return height;
+      height = value;
+      return this;
+    };
+
+    my_chart.data_source = function(value){
+      if (!arguments.length) return my_chart.data_source;
+      data_source = value;
+      // TODO - deregister source and register new source
+      return this;
+    };
+
+    // Create the chart in the specified location in the DOM
+    my_chart.bind = function(selector){
+      return this(selector);
+    };
+
+    return my_chart;
+  }
 
   return my;
 
