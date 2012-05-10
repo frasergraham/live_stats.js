@@ -1,51 +1,59 @@
-<doctype html>
+<!doctype html>
+
 <html>
   <head>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 		<script type="text/javascript" src="d3.v2.js"></script>
 		<script type="text/javascript" src="live_charts.js"></script>
-    <link rel="stylesheet" type="text/css" href="d3_style.css">
+    <link rel="stylesheet" type="text/css" href="d3_style.css"/>
 
     <script>
       
       $(document).ready(function(){
-          var connection = live_charts.connect_to_data_source("ws://localhost:8080");
+          var test_line, test_bar, test_pie;
 
-          var test_line = connection.line_chart()
-                                .width(400)
-                                .height(500)
-                                .data_source("group_1")
-                                .bind("#test_line");
-          
-          var test_bar = connection.bar_chart()
-                                .width(200)
-                                .height(300)
-                                .data_source("group_1")
-                                .bind("#test_bar");
+          live_charts.default_chart_factory(function(connection, selector, data_group){
+            connection.bar_chart()
+                      .data_source(data_group)
+                      .bind(selector);
+          });
 
-          var test_pie = connection.pie_chart()
-                                .width(200)
-                                .height(200)
-                                .data_source("group_1")
-                                .bind("#test_pie");
+          live_charts.default_width(200)
+                     .default_height(100)
+                     .default_selector("#test_3");
 
-          setTimeout(function(){
-            var sets = connection.get_data_sets();
-              for (var set in sets){
-                console.log(sets[set]);          
-              }
-              test_line.width(1000);
-              test_line.height(300);
-              test_bar.width(600);
-              test_bar.height(200);
-              test_pie.width(400);
-              test_pie.height(400);
-                
+          var connection = live_charts.connect_to_data_source("ws://localhost:8080", 
+                                                              function(data_groups){
+            console.log(data_groups);
+
+            test_line = connection.line_chart()
+                                  .width(400)
+                                  .height(500)
+                                  .data_source("group_1")
+                                  .bind("#test_1");
+            
+            test_bar = connection.bar_chart()
+                                  .width(200)
+                                  .height(300)
+                                  .data_source("group_1")
+                                  .bind("#test_2");
+
+            test_pie = connection.pie_chart()
+                                  .width(300)
+                                  .height(300)
+                                  .data_source("group_1")
+                                  .bind("#test_2");
+
+          });
+
+
+
+          // Test resizing of the charts 
+          setTimeout(function(){  
+              test_line.width(1000).height(300);
+              test_bar.width(600).height(200);
+              test_pie.width(200).height(200);                
             }, 5000);
-
-          // live_charts.new_line_chart("ws://localhost:8080", "body", "group_1", 1000, 500);
-          // live_charts.new_pie_chart("ws://localhost:8080", "body", "group_1", 500, 500);
-          // live_charts.new_line_chart("ws://localhost:8080", "body", "Performance", 1000, 200);
 
         });
 
@@ -53,8 +61,8 @@
 
   </head>
   <body>
-    <p id="test_line"></p>
-    <p id="test_bar"></p>
-    <p id="test_pie"></p>
+    <p id="test_1"></p>
+    <p id="test_2"></p>
+    <p id="test_3"></p>
   </body>
 </html>

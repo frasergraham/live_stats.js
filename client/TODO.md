@@ -29,8 +29,7 @@ live_stats Client TODO
 
 - API
     O Refactor to use closures and method chaining
-    - Charts as plugin modules?
-    - chart creation as a function on the data source object
+    X chart creation as a function on the data source object
     - Tolarance of bad data
 
 - Docs

@@ -12,6 +12,9 @@ var live_charts = function(my) {
   var default_width = 400;
   var default_height = 400;
 
+  var default_chart_factory = null;
+  var default_selector = 'body';
+
   // Functions to set or retrieve the defaults for all charts
   my.default_width = function(width){
     if (!arguments.length) return default_width;
@@ -31,14 +34,25 @@ var live_charts = function(my) {
     return my;
   }
 
+  my.default_chart_factory = function(chart_factory){
+    default_chart_factory = chart_factory;
+    return my;
+  }
+
+  my.default_selector =  function(selector){
+    default_selector = selector;
+    return my;
+  }
+
   // base object to construct all our data source objects from
   var Connection = function(server){
     this.server = server;  
   };
 
   // Data Source management, connect to a WebSocket Server and 
-  my.connect_to_data_source = function(websocket_server, default_chart_factory, default_selector){
+  my.connect_to_data_source = function(websocket_server, callback){
       var my_connection = new Connection(websocket_server);
+      my_connection.data_groups = [];
 
       my.source_mappings[websocket_server] = {};
       
@@ -59,6 +73,28 @@ var live_charts = function(my) {
 
         my_connection.connection.onmessage = function (e) {
           new_data = JSON.parse(e.data);
+          
+          var num_groups = my_connection.data_groups.length;
+
+          for (group in new_data){
+            var exists = false;
+            
+            for (existing_group in my_connection.data_groups){
+              if (my_connection.data_groups[existing_group] == group){
+                exists = true;
+              }
+            }
+
+            if (!exists){
+              my_connection.data_groups.push(group);
+            }
+          }
+
+          // Callback happens when new groups are added
+          if (my_connection.data_groups.length != num_groups && callback){
+            callback(my_connection.data_groups);
+          }
+
           for (var set in new_data){
             if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
               for (var draw_func in my.source_mappings[websocket_server][set]){
@@ -68,9 +104,8 @@ var live_charts = function(my) {
             else{
               // This data is unhandled, if we have specified a chart factory use it to 
               // make a chart for this data now.
-
-              if (typeof default_chart_factory !== 'undefined'){
-                default_chart_factory(websocket_server, default_selector || "body", set);
+              if (default_chart_factory !== null){
+                default_chart_factory(my_connection, default_selector || "body", set);
               }
             }
           }
@@ -78,12 +113,8 @@ var live_charts = function(my) {
 
       }();
 
-      my_connection.get_data_sets = function(){
-        var set_names = [];
-        for (var set_name in my.source_mappings[websocket_server]){
-          set_names.push( set_name );
-        }
-        return set_names;
+      my_connection.data_sets = function(){
+        return my_connection.data_groups;
       }
 
       return my_connection;
@@ -122,6 +153,7 @@ var live_charts = function(my) {
       chart = d3.select(selector)
        .append("svg:svg")
        .attr("class", "chart")
+       .attr("id", "barchart_" + data_source)
        .attr("width", width)
        .attr("height", height)
        .append("g")        // this is a group tag
@@ -146,7 +178,7 @@ var live_charts = function(my) {
       my_bar_chart.redraw = function (data_src) {
          
         d3.select(selector)
-          .select("svg.chart")
+          .select("svg#barchart_" + data_source)
           .transition()
           .duration(transition_delay)
           .attr("width", width)
@@ -283,6 +315,7 @@ var live_charts = function(my) {
       chart = d3.select(selector)
         .append("svg:svg")
         .attr("class", "chart")
+        .attr("id", "linechart_" + data_source)
         .attr("width", width + 10)
         .attr("height", height + 10)
         .append("g")        // this is a group tag
@@ -334,7 +367,7 @@ var live_charts = function(my) {
       my_line_chart.redraw = function(data_src){
         
         d3.select(selector)
-          .select("svg.chart")
+          .select("svg#linechart_" + data_source)
           .transition()
           .duration(transition_delay)
           .attr("width", width + 10)
@@ -525,10 +558,11 @@ var live_charts = function(my) {
       
       data = [];
 
-      var vis = d3.select("body")
+      var vis = d3.select(selector)
         .append("svg")
           .data([data])
           .attr("class", "smooth_chart")
+          .attr("id", "piechart_" + data_source)
           .attr("width", width)
           .attr("height", height);
 
