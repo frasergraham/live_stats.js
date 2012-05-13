@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="d3_style.css"/>
 
     <script>
-      
+
       $(document).ready(function(){
           var test_line, test_bar, test_pie;
 
@@ -22,7 +22,7 @@
                      .default_height(100)
                      .default_selector("#test_3");
 
-          var connection = live_charts.connect_to_data_source("ws://localhost:8080", 
+          var connection = live_charts.connect_to_data_source("ws://localhost:8080",
                                                               function(data_groups){
             console.log(data_groups);
 
@@ -31,7 +31,7 @@
                                   .height(500)
                                   .data_source("group_1")
                                   .bind("#test_1");
-            
+
             test_bar = connection.bar_chart()
                                   .width(200)
                                   .height(300)
@@ -48,11 +48,11 @@
 
 
 
-          // Test resizing of the charts 
-          setTimeout(function(){  
+          // Test resizing of the charts
+          setTimeout(function(){
               test_line.width(1000).height(300);
               test_bar.width(600).height(200);
-              test_pie.width(200).height(200);                
+              test_pie.width(200).height(200);
             }, 5000);
 
         });

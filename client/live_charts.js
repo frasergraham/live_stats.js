@@ -340,6 +340,13 @@ var live_charts = function(my) {
 
             var y_bands;
 
+            chart.append("defs")
+                .append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attr("width", width - margin - x(2))
+                .attr("height", height);
+
             if (stacked){
                 // make some more Y scales
                 y_bands = d3.scale.ordinal()
@@ -381,6 +388,13 @@ var live_charts = function(my) {
                     .attr("width", width + right_margin)
                     .attr("height", height + 10);
 
+
+                d3.select("#clip")
+                    .select("rect")
+                    .attr("width", width - margin - x(2))
+                    .attr("height", height);
+
+
                 x.domain([0, saved_points])
                  .range([0, width - margin]);
 
@@ -395,6 +409,8 @@ var live_charts = function(my) {
                 chart.selectAll("path")
                     .data(my_line_chart.historical_values)
                     .enter()
+                    .append("g")
+                    .attr("clip-path", "url(#clip)")
                     .append("svg:path")
                     .attr("id", function(d, i) { return "Path-" + i; })
                     .attr("class", "line_chart")
@@ -411,7 +427,7 @@ var live_charts = function(my) {
                         .data(my_line_chart.historical_values)
                         .enter().append("line")
                         .attr("x1", 0)
-                        .attr("x2", width - margin)
+                        .attr("x2", width - margin - x(2))
                         .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
                         .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
                         .style("stroke", "#ccc");
@@ -421,7 +437,7 @@ var live_charts = function(my) {
                         .transition()
                         .duration(default_transition_delay)
                         .attr("x1", 0)
-                        .attr("x2", width - margin)
+                        .attr("x2", width - margin - x(2))
                         .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
                         .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
 
@@ -445,7 +461,7 @@ var live_charts = function(my) {
                         .data(my_line_chart.historical_values)
                         .enter()
                         .append("svg:text")
-                        .attr("x", width + right_margin - margin)
+                        .attr("x", width + right_margin - margin - x(1))
                         .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
                         .attr("dx", 0) // padding-right
                         .attr("dy", ".35em") // vertical-align: middle
@@ -463,7 +479,7 @@ var live_charts = function(my) {
                         .data(my_line_chart.historical_values)
                         .transition()
                         .duration(default_transition_delay)
-                        .attr("x", width + right_margin - margin)
+                        .attr("x", width + right_margin - margin - x(1))
                         .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
                         .text(function(d,i){return String(d[d.length-1].value);});
 
@@ -521,7 +537,7 @@ var live_charts = function(my) {
 
                 chart.selectAll("path")
                     .data(my_line_chart.historical_values)
-                    .attr("transform", "translate(" + x(1) + ")")
+                    .attr("transform", "translate(0)")
                     .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
                     .on("mouseover", function(d,i){
                         var mouse_pos = d3.mouse(this);
@@ -533,7 +549,7 @@ var live_charts = function(my) {
                     .transition()
                     .ease("linear")
                     .duration(default_transition_delay)
-                    .attr("transform", "translate(" + x(0) + ")");
+                    .attr("transform", "translate(" + -1 * x(1) + ")");
             };
 
             my.register_data_source(server, data_source, my_line_chart.redraw);
