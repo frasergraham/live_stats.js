@@ -1,7 +1,7 @@
 .chart {
   margin-left: 42px;
   font: 10px sans-serif;
-  shape-rendering: crispEdges; 
+  shape-rendering: crispEdges;
 }
 
 .smooth_chart {
@@ -15,7 +15,7 @@
   stroke: white;
 }
 
-.chart text {
+.chart {
   font: 15px sans-serif;
   font-weight: bold;
   font-variant: small-caps;
@@ -26,4 +26,9 @@
 	stroke-width: 2;
 	fill: none;
   shape-rendering: auto;
+}
+
+.values{
+  font: 24px sans-serif;
+  fill:lightgray;
 }

@@ -23,14 +23,11 @@ live_stats Client TODO
         - Consistent code patterns for enter, update, exit
         - Headers and labels (show data source and group?)
     
-        - Fix up how we do connections and register sources
         - Unregistering sources
-        - fix default chart factory
 
 - API
-    O Refactor to use closures and method chaining
-    X chart creation as a function on the data source object
     - Tolarance of bad data
+    - using untrusted strings in ID's - BAD BAD BAD - fix
 
 - Docs
     - Client README
