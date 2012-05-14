@@ -349,31 +349,23 @@ var live_charts = function(my) {
 
             if (stacked){
                 // make some more Y scales
-                y_bands = d3.scale.ordinal()
-                                        .rangeBands([0,height]);
-
+                y_bands = d3.scale.ordinal().rangeBands([0,height]);
             }
 
-
             var line = d3.svg.line()
-                                    .x(function(d,i){ return x(i); })
-                                    .y(function(d,i){
-                                            if (stacked){
-                                                return -1.0 * (y(d.value) / y_bands.domain().length) + height - y_bands(d.name);
-                                            }
-                                            else{
-                                                return -1.0 * y(d.value) + height;
-                                            }
-                                        })
-                                    .interpolate("monotone");
-
-            chart.selectAll("path")
-                .data(data)
-                .enter()
-                .append("svg:path")
-                .attr("class", "line_chart")
-                .attr("stroke", function(d, i) { return color(i); })
-                .attr('d', function(d,i){ return line(data[i]);} );
+                .x(function(d,i){ return x(i); })
+                .y(function(d,i){
+                    if (stacked){
+                        var a = -1.0 * (y(d.value) / y_bands.domain().length)
+                        var b = y_bands(d.name);
+                        var result = a + height - b;
+                        return result;
+                    }
+                    else{
+                        return -1.0 * y(d.value) + height;
+                    }
+                })
+                .interpolate("monotone");
 
             // data storage, we're going to want to store the last X values of everything
             my_line_chart.historical_values = [];
@@ -381,116 +373,9 @@ var live_charts = function(my) {
             // draw function
             my_line_chart.redraw = function(data_src){
 
-                d3.select(selector)
-                    .select("svg#linechart_" + data_source)
-                    .transition()
-                    .duration(transition_delay)
-                    .attr("width", width + right_margin)
-                    .attr("height", height + 10);
-
-
-                d3.select("#clip")
-                    .select("rect")
-                    .attr("width", width - margin - x(2))
-                    .attr("height", height);
-
-
-                x.domain([0, saved_points])
-                 .range([0, width - margin]);
-
-                y.domain([0,100])
-                 .range([0, height]);
-
-                if (stacked){
-                    y_bands.domain(my_line_chart.historical_values.map(function (d, i){return d[0].name;}))
-                                        .rangeBands([0,height]);
-                }
-
-                chart.selectAll("path")
-                    .data(my_line_chart.historical_values)
-                    .enter()
-                    .append("g")
-                    .attr("clip-path", "url(#clip)")
-                    .append("svg:path")
-                    .attr("id", function(d, i) { return "Path-" + i; })
-                    .attr("class", "line_chart")
-                    .attr("stroke", function(d, i) { return color(i); })
-                    .attr('d', function(d,i){ return line(my_line_chart.historical_values[i]);} );
-
-                chart.selectAll("path")
-                    .data(my_line_chart.historical_values)
-                    .exit()
-                    .remove();
-
-                if (stacked){
-                    chart.selectAll("line")
-                        .data(my_line_chart.historical_values)
-                        .enter().append("line")
-                        .attr("x1", 0)
-                        .attr("x2", width - margin - x(2))
-                        .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-                        .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-                        .style("stroke", "#ccc");
-
-                    chart.selectAll("line")
-                        .data(my_line_chart.historical_values)
-                        .transition()
-                        .duration(default_transition_delay)
-                        .attr("x1", 0)
-                        .attr("x2", width - margin - x(2))
-                        .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-                        .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
-
-                    chart.selectAll("line")
-                        .data(my_line_chart.historical_values)
-                        .exit()
-                        .remove();
-
-                    chart.selectAll("text.yAxis")
-                        .data(my_line_chart.historical_values)
-                        .enter()
-                        .append("svg:text")
-                        .attr("x", -margin)
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-                        .attr("dx", 0) // padding-right
-                        .attr("dy", ".35em") // vertical-align: middle
-                        .attr("class", "yAxis")
-                        .text(function(d,i){return String(d[0].name);});
-
-                    chart.selectAll("text.values")
-                        .data(my_line_chart.historical_values)
-                        .enter()
-                        .append("svg:text")
-                        .attr("x", width + right_margin - margin - x(1))
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-                        .attr("dx", 0) // padding-right
-                        .attr("dy", ".35em") // vertical-align: middle
-                        .attr("class", "values")
-                        .attr("text-anchor", "end") // text-align: right
-                        .text(function(d,i){return String(d[0].value);});
-
-                    chart.selectAll("text.yAxis")
-                        .data(my_line_chart.historical_values)
-                        .transition()
-                        .duration(default_transition_delay)
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-
-                    chart.selectAll("text.values")
-                        .data(my_line_chart.historical_values)
-                        .transition()
-                        .duration(default_transition_delay)
-                        .attr("x", width + right_margin - margin - x(1))
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-                        .text(function(d,i){return String(d[d.length-1].value);});
-
-                    chart.selectAll("text.yAxis")
-                        .data(my_line_chart.historical_values)
-                        .exit()
-                        .remove();
-                }
-
+                // Manage the data update, appending new data to the historical and shifting
+                // old data off the end.
                 var updated = [];
-
                 for (var data_set in data_src){
 
                     // If this is new data, then make an array for it in the historicals and
@@ -499,7 +384,7 @@ var live_charts = function(my) {
                         my_line_chart.historical_values[data_set] = [];
                         var len = saved_points;
                         while (len--){
-                             my_line_chart.historical_values[data_set][len] = {name:data_src[data_set].name, value:0};
+                             my_line_chart.historical_values[data_set][len] = {name:data_src[data_set].name, value:1};
                         }
                     }
 
@@ -512,6 +397,7 @@ var live_charts = function(my) {
                     updated.push(data_set);
                 }
 
+                // Check for dead data, as soon as everything is 0 then that data entry goes away
                 for (var set in my_line_chart.historical_values){
 
                     // Provice empty data for sets that have stopped sending
@@ -535,6 +421,120 @@ var live_charts = function(my) {
                     }
                 }
 
+                d3.select(selector)
+                    .select("svg#linechart_" + data_source)
+                    .transition()
+                    .duration(transition_delay)
+                    .attr("width", width + right_margin)
+                    .attr("height", height + 10);
+
+
+                d3.select("#clip")
+                    .select("rect")
+                    .attr("width", width - margin - x(2))
+                    .attr("height", height);
+
+                x.domain([0, saved_points])
+                 .range([0, width - margin]);
+
+                y.domain([0,100])
+                 .range([0, height]);
+
+                if (stacked){
+                    var bands = my_line_chart.historical_values.map(function (d, i){
+                            return d[0].name;
+                        });
+
+                    y_bands.domain(bands)
+                        .rangeBands([0,height]);
+
+                    // Horizontal bars between graphs
+                    chart.selectAll("line")
+                        .data(my_line_chart.historical_values)
+                        .enter().append("line")
+                        .attr("x1", 0)
+                        .attr("x2", width - margin - x(2))
+                        .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+                        .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+                        .style("stroke", "#ccc");
+
+                    chart.selectAll("line")
+                        .data(my_line_chart.historical_values)
+                        .transition()
+                        .duration(default_transition_delay)
+                        .attr("x1", 0)
+                        .attr("x2", width - margin - x(2))
+                        .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+                        .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
+
+                    chart.selectAll("line")
+                        .data(my_line_chart.historical_values)
+                        .exit()
+                        .remove();
+
+
+                    // Labels on each graph line
+                    chart.selectAll("text.yAxis")
+                        .data(my_line_chart.historical_values)
+                        .enter()
+                        .append("svg:text")
+                        .attr("x", -margin)
+                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+                        .attr("dx", 0) // padding-right
+                        .attr("dy", ".35em") // vertical-align: middle
+                        .attr("class", "yAxis")
+                        .text(function(d,i){return String(d[0].name);});
+
+                    chart.selectAll("text.yAxis")
+                        .data(my_line_chart.historical_values)
+                        .transition()
+                        .duration(default_transition_delay)
+                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+
+                    chart.selectAll("text.yAxis")
+                        .data(my_line_chart.historical_values)
+                        .exit()
+                        .remove();
+
+                    // values displayed for most recent data point at end of line
+                    chart.selectAll("text.values")
+                        .data(my_line_chart.historical_values)
+                        .enter()
+                        .append("svg:text")
+                        .attr("x", width + right_margin - margin - x(1))
+                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+                        .attr("dx", 0) // padding-right
+                        .attr("dy", ".35em") // vertical-align: middle
+                        .attr("class", "values")
+                        .attr("text-anchor", "end") // text-align: right
+                        .text(function(d,i){return String(d[0].value);});
+
+                    chart.selectAll("text.values")
+                        .data(my_line_chart.historical_values)
+                        .transition()
+                        .duration(default_transition_delay)
+                        .attr("x", width + right_margin - margin - x(1))
+                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+                        .text(function(d,i){return String(d[d.length-1].value);});
+
+                    chart.selectAll("text.values")
+                        .data(my_line_chart.historical_values)
+                        .exit()
+                        .remove();
+                }
+
+                // Finally update all the paths
+                chart.selectAll("path")
+                    .data(my_line_chart.historical_values)
+                    .enter()
+                    .append("g")
+                    .attr("clip-path", "url(#clip)")
+                    .append("svg:path")
+                    .attr("id", function(d, i) { return "Path-" + i; })
+                    .attr("class", "line_chart")
+                    .attr("stroke", function(d, i) { return color(i); })
+                    .attr('d', function(d,i){ return line(my_line_chart.historical_values[i]);} );
+
                 chart.selectAll("path")
                     .data(my_line_chart.historical_values)
                     .attr("transform", "translate(0)")
@@ -550,6 +550,12 @@ var live_charts = function(my) {
                     .ease("linear")
                     .duration(default_transition_delay)
                     .attr("transform", "translate(" + -1 * x(1) + ")");
+
+                chart.selectAll("path")
+                    .data(my_line_chart.historical_values)
+                    .exit()
+                    .remove();
+
             };
 
             my.register_data_source(server, data_source, my_line_chart.redraw);

@@ -44,16 +44,16 @@
                                   .data_source("group_1")
                                   .bind("#test_2");
 
+            // Test resizing of the charts
+            setTimeout(function(){
+                test_line.width(1000).height(300);
+                test_bar.width(600).height(200);
+                test_pie.width(200).height(200);
+              }, 5000);
+
           });
 
 
-
-          // Test resizing of the charts
-          setTimeout(function(){
-              test_line.width(1000).height(300);
-              test_bar.width(600).height(200);
-              test_pie.width(200).height(200);
-            }, 5000);
 
         });
 
