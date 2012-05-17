@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="live_stats.js : Visualization Tools for live data over WebSockets using d3.js" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>live_stats.js</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/frasergraham/live_stats.js">View on GitHub</a>
+
+          <h1 id="project_title">live_stats.js</h1>
+          <h2 id="project_tagline">Visualization Tools for live data over WebSockets using d3.js</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/frasergraham/live_stats.js/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/frasergraham/live_stats.js/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>live_stats.js</h1>
+
+<p>live_stats.js is a simple graphing and charting library designed to stream content from a WebSocket connection and display a live updating chart of the data using d3.js and SVG in a browser.</p>
+
+<p>It is currently a work in progress.</p>
+
+<p><img src="https://github.com/frasergraham/live_stats.js/raw/master/doc/screenshot.png" alt="live_stats.js Screenshot"></p>
+
+<h2>Using live_stats.js</h2>
+
+<h3>Server</h3>
+
+<p>To serve up data to live_stats.js you need any WebSocket server tech and simply send a regular stream of data as JSON in the following format...</p>
+
+<div class="highlight">
+<pre><span class="p">{</span>
+    <span class="nt">"group_1"</span> <span class="p">:</span> <span class="p">[{</span><span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Sample A"</span><span class="p">,</span> <span class="nt">"value"</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                 <span class="p">{</span><span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Sample B"</span><span class="p">,</span> <span class="nt">"value"</span><span class="p">:</span> <span class="mi">20</span><span class="p">},</span>
+                 <span class="p">{</span><span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Sample C"</span><span class="p">,</span> <span class="nt">"value"</span><span class="p">:</span> <span class="mi">35</span><span class="p">}],</span>
+
+    <span class="nt">"group_2"</span> <span class="p">:</span> <span class="p">[{</span><span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Apples"</span><span class="p">,</span> <span class="nt">"value"</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
+                 <span class="p">{</span><span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Bananas"</span><span class="p">,</span> <span class="nt">"value"</span><span class="p">:</span> <span class="mi">2321</span><span class="p">}],</span>
+
+    <span class="nt">"group_3"</span> <span class="p">:</span> <span class="p">[{</span><span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Beer"</span><span class="p">,</span> <span class="nt">"value"</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                 <span class="p">{</span><span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Wine"</span><span class="p">,</span> <span class="nt">"value"</span><span class="p">:</span> <span class="mi">200</span><span class="p">},</span>
+                 <span class="p">{</span><span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Whisky"</span><span class="p">,</span> <span class="nt">"value"</span><span class="p">:</span> <span class="mi">100</span><span class="p">}],</span>
+<span class="p">}</span>
+</pre>
+</div>
+
+
+<p>Each "group" of data can be used to generate it's own chart and a group can have as many named numerical entries as you need.</p>
+
+<h3>Client</h3>
+
+<p>After you include live_stats.js in your application generating charts is a two step process, connect to the data source and then decide what type of chart you want for each of the groups being sent to you.</p>
+
+<div class="highlight">
+<pre>
+<span class="c1">// Establish a connection to a WebSocket Server</span>
+<span class="kd">var</span> <span class="nx">connection</span> <span class="o">=</span> <span class="nx">live_charts</span><span class="p">.</span><span class="nx">connect_to_data_source</span><span class="p">(</span><span class="s2">"ws://localhost:8080"</span><span class="p">,</span>
+    <span class="c1">// This function gets called once a stream of data starts </span>
+    <span class="c1">//  with the names of the groups of data passed in.</span>
+    <span class="kd">function</span><span class="p">(</span><span class="nx">data_groups</span><span class="p">){</span>
+
+        <span class="c1">// The data_source atribute determines which group from the data stream</span>
+        <span class="c1">// is used, if the values in that group change the chart updates</span>
+        <span class="c1">// The bind() function actually creates the chart in the selector specified</span>
+        <span class="nx">test_line</span> <span class="o">=</span> <span class="nx">connection</span><span class="p">.</span><span class="nx">line_chart</span><span class="p">()</span>
+                              <span class="p">.</span><span class="nx">width</span><span class="p">(</span><span class="mi">400</span><span class="p">)</span>
+                              <span class="p">.</span><span class="nx">height</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+                              <span class="p">.</span><span class="nx">data_source</span><span class="p">(</span><span class="nx">data_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                              <span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="s2">"#test_1"</span><span class="p">);</span>
+
+        <span class="nx">test_bar</span> <span class="o">=</span> <span class="nx">connection</span><span class="p">.</span><span class="nx">bar_chart</span><span class="p">()</span>
+                             <span class="p">.</span><span class="nx">width</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+                             <span class="p">.</span><span class="nx">height</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+                             <span class="p">.</span><span class="nx">data_source</span><span class="p">(</span><span class="nx">data_groups</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                             <span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="s2">"#test_2"</span><span class="p">);</span>
+
+       <span class="nx">test_pie</span> <span class="o">=</span> <span class="nx">connection</span><span class="p">.</span><span class="nx">pie_chart</span><span class="p">()</span>
+                             <span class="p">.</span><span class="nx">width</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+                             <span class="p">.</span><span class="nx">height</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+                             <span class="p">.</span><span class="nx">data_source</span><span class="p">(</span><span class="nx">data_groups</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                             <span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="s2">"#test_2"</span><span class="p">);</span>
+    <span class="p">});</span>
+</pre>
+</div>
+
+
+<p>Currently three types of charts are supported</p>
+
+<ul>
+<li>Pie Charts</li>
+<li>Horizontal Bar Charts</li>
+<li>Stacked Line Charts</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">live_stats.js maintained by <a href="https://github.com/frasergraham">frasergraham</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
