@@ -14,49 +14,43 @@
 
           live_charts.default_chart_factory(function(connection, selector, data_group){
             connection.bar_chart()
-                      .data_source(data_group)
-                      .bind(selector);
+              .data_source(data_group)
+              .bind(selector);
           });
 
           live_charts.default_width(200)
-                     .default_height(100)
-                     .default_selector("#test_3");
+            .default_height(100)
+            .default_selector("#test_3");
 
           var connection = live_charts.connect_to_data_source("ws://localhost:8080",
-                                                              function(data_groups){
-            console.log(data_groups);
+            function(data_groups){
 
-            test_line = connection.line_chart()
-                                  .width(400)
-                                  .height(500)
-                                  .data_source("group_1")
-                                  .bind("#test_1");
+              test_line = connection.line_chart()
+                                    .width(400)
+                                    .height(500)
+                                    .data_source("group_1")
+                                    .bind("#test_1");
 
-            test_bar = connection.bar_chart()
-                                  .width(200)
-                                  .height(300)
-                                  .data_source("group_1")
-                                  .bind("#test_2");
+              test_bar = connection.bar_chart()
+                                    .width(200)
+                                    .height(300)
+                                    .data_source("group_1")
+                                    .bind("#test_2");
 
-            test_pie = connection.pie_chart()
-                                  .width(300)
-                                  .height(300)
-                                  .data_source("group_1")
-                                  .bind("#test_2");
+              test_pie = connection.pie_chart()
+                                    .width(300)
+                                    .height(300)
+                                    .data_source("group_1")
+                                    .bind("#test_2");
 
-            // Test resizing of the charts
-            setTimeout(function(){
-                test_line.width(1000).height(300);
-                test_bar.width(600).height(200);
-                test_pie.width(200).height(200);
-              }, 5000);
-
-          });
-
-
-
+              // Test resizing of the charts
+              setTimeout(function(){
+                  test_line.width(1000).height(300);
+                  test_bar.width(600).height(300);
+                  test_pie.width(250).height(250);
+            }, 5000);
         });
-
+      });
     </script>
 
   </head>

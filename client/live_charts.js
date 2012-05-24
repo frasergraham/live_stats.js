@@ -58,73 +58,73 @@ var live_charts = function(my) {
 
     // Data Source management, connect to a WebSocket Server and
     my.connect_to_data_source = function(websocket_server, callback){
-            var my_connection = new Connection(websocket_server);
-            my_connection.data_groups = [];
+        var my_connection = new Connection(websocket_server);
+        my_connection.data_groups = [];
 
-            my.source_mappings[websocket_server] = {};
+        my.source_mappings[websocket_server] = {};
 
-            var establish_connection = function establish_connection(){
+        var establish_connection = function establish_connection(){
 
-                my_connection.connection = new WebSocket(websocket_server, null);
+            my_connection.connection = new WebSocket(websocket_server, null);
 
-                my_connection.connection.onopen = function(){
-                    console.log("Connected to " + websocket_server);
-                };
+            my_connection.connection.onopen = function(){
+                console.log("Connected to " + websocket_server);
+            };
 
-                my_connection.connection.onclose = function(){
-                    console.log("Lost Connection: " + websocket_server);
-                    setTimeout(function(){
-                        establish_connection();
-                    }, 5000);
-                };
+            my_connection.connection.onclose = function(){
+                console.log("Lost Connection: " + websocket_server);
+                setTimeout(function(){
+                    establish_connection();
+                }, 5000);
+            };
 
-                my_connection.connection.onmessage = function (e) {
-                    new_data = JSON.parse(e.data);
+            my_connection.connection.onmessage = function (e) {
+                new_data = JSON.parse(e.data);
 
-                    var num_groups = my_connection.data_groups.length;
+                var num_groups = my_connection.data_groups.length;
 
-                    for (group in new_data){
-                        var exists = false;
+                for (group in new_data){
+                    var exists = false;
 
-                        for (existing_group in my_connection.data_groups){
-                            if (my_connection.data_groups[existing_group] == group){
-                                exists = true;
-                            }
-                        }
-
-                        if (!exists){
-                            my_connection.data_groups.push(group);
+                    for (existing_group in my_connection.data_groups){
+                        if (my_connection.data_groups[existing_group] == group){
+                            exists = true;
                         }
                     }
 
-                    // Callback happens when new groups are added
-                    if (my_connection.data_groups.length != num_groups && callback){
-                        callback(my_connection.data_groups);
+                    if (!exists){
+                        my_connection.data_groups.push(group);
                     }
+                }
 
-                    for (var set in new_data){
-                        if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
-                            for (var draw_func in my.source_mappings[websocket_server][set]){
-                                my.source_mappings[websocket_server][set][draw_func](new_data[set]);
-                            }
-                        }
-                        else{
-                            // This data is unhandled, if we have specified a chart factory use it to
-                            // make a chart for this data now.
-                            if (default_chart_factory !== null){
-                                default_chart_factory(my_connection, default_selector || "body", set);
-                            }
+                // Callback happens when new groups are added
+                if (my_connection.data_groups.length != num_groups && callback){
+                    callback(my_connection.data_groups);
+                }
+
+                for (var set in new_data){
+                    if (typeof my.source_mappings[websocket_server][set] !== 'undefined'){
+                        for (var draw_func in my.source_mappings[websocket_server][set]){
+                            my.source_mappings[websocket_server][set][draw_func](new_data[set]);
                         }
                     }
-                };
+                    else{
+                        // This data is unhandled, if we have specified a chart factory use it to
+                        // make a chart for this data now.
+                        if (default_chart_factory !== null){
+                            default_chart_factory(my_connection, default_selector || "body", set);
+                        }
+                    }
+                }
+            };
 
-            }();
+        }();
 
-            my_connection.data_sets = function(){
-                return my_connection.data_groups;
-            }
+        my_connection.data_sets = function(){
+            return my_connection.data_groups;
+        }
 
-            return my_connection;
+        return my_connection;
     };
 
 
@@ -309,10 +309,11 @@ var live_charts = function(my) {
         var transition_delay = default_transition_delay;
         var data_source = null;
         var server = this.server;
+        var stacked = true;
+        var paused = false;
 
         var my_chart = function my_chart(selector){
             var my_line_chart = {};
-            var stacked = true;
             var saved_points = 100;
             var margin = 80;
             var right_margin = 30;
@@ -327,7 +328,25 @@ var live_charts = function(my) {
                 .attr("width", width + right_margin)
                 .attr("height", height + 10)
                 .append("g")        // this is a group tag
-                .attr("transform", "translate(" + margin + ",5)"); // translate the group together
+                .attr("transform", "translate(" + margin + ",5)");
+
+            chart.on("click", function(){
+                if (stacked){
+                    stacked = false;
+                } else {
+                    stacked = true;
+                };
+
+                paused = true;
+
+                chart.selectAll("path")
+                    .data(my_line_chart.historical_values)
+                    .transition()
+                    .ease("linear")
+                    .duration(default_transition_delay)
+                    .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
+                    .each("end", function() { paused = false;})
+                });
 
             // define scales
             var x = d3.scale.linear()
@@ -523,45 +542,54 @@ var live_charts = function(my) {
                         .remove();
                 }
 
-                // Finally update all the paths
-                chart.selectAll("path")
-                    .data(my_line_chart.historical_values)
-                    .enter()
-                    .append("g")
-                    .attr("clip-path", "url(#clip)")
-                    .append("svg:path")
-                    .attr("id", function(d, i) { return "Path-" + i; })
-                    .attr("class", "line_chart")
-                    .attr("stroke", function(d, i) { return color(i); })
-                    .attr('d', function(d,i){ return line(my_line_chart.historical_values[i]);} );
+                if (!paused){
 
-                chart.selectAll("path")
-                    .data(my_line_chart.historical_values)
-                    .attr("transform", "translate(0)")
-                    .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
-                    .on("mouseover", function(d,i){
-                        var mouse_pos = d3.mouse(this);
-                        // console.log(mouse_pos);
-                        var pos = Math.floor(x.invert(mouse_pos[0]));
-                        var data_val = d[pos].value;
-                        console.log(d[pos].name + " " + data_val);
-                    })
-                    .transition()
-                    .ease("linear")
-                    .duration(default_transition_delay)
-                    .attr("transform", "translate(" + -1 * x(1) + ")");
+                    // Finally update all the paths
+                    chart.selectAll("path")
+                        .data(my_line_chart.historical_values)
+                        .enter()
+                        .append("g")
+                        .attr("clip-path", "url(#clip)")
+                        .append("svg:path")
+                        .attr("id", function(d, i) { return "Path-" + i; })
+                        .attr("class", "line_chart")
+                        .attr("stroke", function(d, i) { return color(i); })
+                        .attr('d', function(d,i){ return line(my_line_chart.historical_values[i]);} );
 
-                chart.selectAll("path")
-                    .data(my_line_chart.historical_values)
-                    .exit()
-                    .remove();
+                    chart.selectAll("path")
+                        .data(my_line_chart.historical_values)
+                        .attr("transform", "translate(0)")
+                        .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
+                        .on("mouseover", function(d,i){
+                            var mouse_pos = d3.mouse(this);
+                            // console.log(mouse_pos);
+                            var pos = Math.floor(x.invert(mouse_pos[0]));
+                            var data_val = d[pos].value;
+                            console.log(d[pos].name + " " + data_val);
+                        })
+                        .transition()
+                        .ease("linear")
+                        .duration(default_transition_delay)
+                        .attr("transform", "translate(" + -1 * x(1) + ")");
 
+                    chart.selectAll("path")
+                        .data(my_line_chart.historical_values)
+                        .exit()
+                        .remove();
+
+                }
             };
 
             my.register_data_source(server, data_source, my_line_chart.redraw);
             return my_chart;
 
         };
+
+        my_chart.stacked = function(value){
+            if (!arguments.length) return stacked;
+            stacked = value;
+            return this;
+        }
 
         my_chart.width = function(value){
             if (!arguments.length) return width;

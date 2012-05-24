@@ -5,21 +5,20 @@
 				"Sample D",
 				"Sample E",
 				"Sample F",
-				"Sample G",
 				"Sample H",
 				"Sample I",
 				"Test 1",
 				"Test 2",
 				"Test 3"],
-					
-	"group_2" : ["WINE", 
-				 "BEER", 
-				 "CHEESE", 
+
+	"group_2" : ["WINE",
+				 "BEER",
+				 "CHEESE",
 				 "CHOC"],
-				 
-	"group_3" : ["John", 
-				 "Paul", 
-				 "George", 
+
+	"group_3" : ["John",
+				 "Paul",
+				 "George",
 				 "Ringo"]
 
 }
