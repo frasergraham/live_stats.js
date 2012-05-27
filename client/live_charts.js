@@ -307,6 +307,7 @@ var live_charts = function(my) {
         var width = default_width
         var height = default_height;
         var transition_delay = default_transition_delay;
+        var saved_points = 100;
         var data_source = null;
         var server = this.server;
         var stacked = true;
@@ -314,7 +315,6 @@ var live_charts = function(my) {
 
         var my_chart = function my_chart(selector){
             var my_line_chart = {};
-            var saved_points = 10;
             var margin = 80;
             var right_margin = 30;
             var data = [];
@@ -414,7 +414,12 @@ var live_charts = function(my) {
 
                     // append new values to historicals, slide old ones off the end
                     my_line_chart.historical_values[my_line_chart.index_map[name]].push(data_src[data_set]);
-                    my_line_chart.historical_values[my_line_chart.index_map[name]].shift();
+
+                    // We shift until we're at saved point size, this serves to truncate if we adjust saved
+                    // point size and have too much data.
+                    while (my_line_chart.historical_values[my_line_chart.index_map[name]].length > saved_points){
+                        my_line_chart.historical_values[my_line_chart.index_map[name]].shift();
+                    }
 
                     // track the ones we have updated, if something isn't being updated then
                     // the data source has stopped and it needs empty data until we run out
@@ -469,7 +474,7 @@ var live_charts = function(my) {
                     .attr("width", width - margin - x(2))
                     .attr("height", height);
 
-                x.domain([0, saved_points])
+                x.domain([0, my_line_chart.historical_values[my_line_chart.index_map[name]].length])
                  .range([0, width - margin]);
 
                 y.domain([0,100])
@@ -617,6 +622,12 @@ var live_charts = function(my) {
         my_chart.height = function(value){
             if (!arguments.length) return height;
             height = value;
+            return this;
+        };
+
+        my_chart.saved_points = function(value){
+            if (!arguments.length) return saved_points;
+            saved_points = value;
             return this;
         };
 

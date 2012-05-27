@@ -3,8 +3,8 @@
 <html>
   <head>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-    <script type="text/javascript" src="d3.v2.js"></script>
-    <script type="text/javascript" src="live_charts.js"></script>
+		<script type="text/javascript" src="d3.v2.js"></script>
+		<script type="text/javascript" src="live_charts.js"></script>
     <link rel="stylesheet" type="text/css" href="d3_style.css"/>
 
     <script>
@@ -31,24 +31,24 @@
                                     .data_source("group_1")
                                     .bind("#test_1");
 
-              test_bar = connection.bar_chart()
-                                    .width(200)
-                                    .height(300)
-                                    .data_source("group_1")
-                                    .bind("#test_2");
+              // test_bar = connection.bar_chart()
+              //                       .width(200)
+              //                       .height(300)
+              //                       .data_source("group_1")
+              //                       .bind("#test_2");
 
-              test_pie = connection.pie_chart()
-                                    .width(300)
-                                    .height(300)
-                                    .data_source("group_1")
-                                    .bind("#test_2");
+              // test_pie = connection.pie_chart()
+              //                       .width(300)
+              //                       .height(300)
+              //                       .data_source("group_1")
+              //                       .bind("#test_2");
 
-              // Test resizing of the charts
-              setTimeout(function(){
-                  test_line.width(1000).height(300).saved_points(50);
-                  test_bar.width(600).height(300);
-                  test_pie.width(250).height(250);
-            }, 5000);
+            //   // Test resizing of the charts
+            //   setTimeout(function(){
+            //       test_line.width(1000).height(300);
+            //       test_bar.width(600).height(300);
+            //       test_pie.width(250).height(250);
+            // }, 5000);
         });
       });
     </script>
