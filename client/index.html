@@ -28,6 +28,7 @@
               test_line = connection.line_chart()
                                     .width(800)
                                     .height(300)
+                                    .stacked(true)
                                     .data_source("group_1")
                                     .bind("#test_1");
 
@@ -42,20 +43,42 @@
                                     .height(300)
                                     .data_source("group_1")
                                     .bind("#test_2");
-
-              // Test resizing of the charts
-              setTimeout(function(){
-                  test_line.width(1000).height(300).saved_points(50);
-                  test_bar.width(600).height(300);
-                  test_pie.width(250).height(250);
-            }, 5000);
         });
+
+        $("#toggle_stacked").click(function(){
+          test_line.stcked(!test_line.stacked());
+        });
+
+        $("#wider").click(function(){
+          test_line.width(test_line.width() + 100 );
+        });
+
+        $("#narrower").click(function(){
+          test_line.width(test_line.width() - 100);
+        });
+
+        $("#taller").click(function(){
+          test_line.height(test_line.height() + 100 );
+        });
+
+        $("#shorter").click(function(){
+          test_line.height(test_line.height() - 100);
+        });
+
       });
     </script>
+
+    <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
 
   </head>
   <body>
     <p id="test_1"></p>
+    <a href="#" id="toggle_stacked">TOGGLE STACKED</a>
+    <a href="#" id="wider">WIDER</a>
+    <a href="#" id="narrower">NARROWER</a>
+    <a href="#" id="taller">TALLER</a>
+    <a href="#" id="shorter">SHORTER</a>
+
     <p id="test_2"></p>
     <p id="test_3"></p>
   </body>

@@ -312,13 +312,15 @@ var live_charts = function(my) {
         var server = this.server;
         var stacked = true;
         var paused = false;
+        var chart;
+        var my_line_chart = {};
+        var line;
 
         var my_chart = function my_chart(selector){
-            var my_line_chart = {};
             var margin = 80;
             var right_margin = 30;
             var data = [];
-            var chart, x, y;
+            var x, y;
             color = d3.scale.category20();
 
             chart = d3.select(selector)
@@ -329,24 +331,6 @@ var live_charts = function(my) {
                 .attr("height", height + 10)
                 .append("g")        // this is a group tag
                 .attr("transform", "translate(" + margin + ",5)");
-
-            chart.on("click", function(){
-                if (stacked){
-                    stacked = false;
-                } else {
-                    stacked = true;
-                };
-
-                paused = true;
-
-                chart.selectAll("path")
-                    .data(my_line_chart.historical_values)
-                    .transition()
-                    .ease("linear")
-                    .duration(default_transition_delay)
-                    .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
-                    .each("end", function() { paused = false;})
-                });
 
             // define scales
             var x = d3.scale.linear()
@@ -366,12 +350,9 @@ var live_charts = function(my) {
                 .attr("width", width - margin - x(2))
                 .attr("height", height);
 
-            if (stacked){
-                // make some more Y scales
-                y_bands = d3.scale.ordinal().rangeBands([0,height]);
-            }
+            y_bands = d3.scale.ordinal().rangeBands([0,height]);
 
-            var line = d3.svg.line()
+            line = d3.svg.line()
                 .x(function(d,i){ return x(i); })
                 .y(function(d,i){
                     if (stacked){
@@ -609,7 +590,20 @@ var live_charts = function(my) {
 
         my_chart.stacked = function(value){
             if (!arguments.length) return stacked;
-            stacked = value;
+
+            if (stacked != value){
+                stacked = value;
+                if (chart){
+                    paused = true;
+                    chart.selectAll("path")
+                        .data(my_line_chart.historical_values)
+                        .transition()
+                        .ease("linear")
+                        .duration(default_transition_delay)
+                        .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
+                        .each("end", function() { paused = false;})
+                }
+            }
             return this;
         }
 
