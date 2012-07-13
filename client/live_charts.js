@@ -311,6 +311,8 @@ var live_charts = function(my) {
     Connection.prototype.line_chart = function line_chart(){
         var width = default_width;
         var height = default_height;
+        var width_changed = false;
+        var height_changed = false;
         var transition_delay = default_transition_delay;
         var saved_points = 100;
         var data_source = null;
@@ -457,6 +459,8 @@ var live_charts = function(my) {
 
                 d3.select("#clip")
                     .select("rect")
+                    .transition()
+                    .duration(default_transition_delay)
                     .attr("width", width - margin - x(2))
                     .attr("height", height);
 
@@ -564,21 +568,35 @@ var live_charts = function(my) {
                         .attr("stroke", function(d, i) { return color(i); })
                         .attr('d', function(d,i){ return line(my_line_chart.historical_values[i]);} );
 
-                    chart.selectAll("path")
-                        .data(my_line_chart.historical_values)
-                        .attr("transform", "translate(0)")
-                        .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
-                        .on("mouseover", function(d,i){
-                            var mouse_pos = d3.mouse(this);
-                            // console.log(mouse_pos);
-                            var pos = Math.floor(x.invert(mouse_pos[0]));
-                            var data_val = d[pos].value;
-                            console.log(d[pos].name + " " + data_val);
-                        })
-                        .transition()
-                        .ease("linear")
-                        .duration(default_transition_delay)
+                    if (width_changed || height_changed){
+                        paused = true;
+                        chart.selectAll("path")
+                            .data(my_line_chart.historical_values)
+                            .transition()
+                            .duration(default_transition_delay)
+                            .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
+                            .each("end", function() { paused = false;});
+
+                        width_changed = false;
+                        height_changed = false;
+                    } else {
+
+                        chart.selectAll("path")
+                            .data(my_line_chart.historical_values)
+                            .attr("transform", "translate(0)")
+                            .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
+                            .on("mouseover", function(d,i){
+                                var mouse_pos = d3.mouse(this);
+                                // console.log(mouse_pos);
+                                var pos = Math.floor(x.invert(mouse_pos[0]));
+                                var data_val = d[pos].value;
+                                console.log(d[pos].name + " " + data_val);
+                            })
+                            .transition()
+                            .ease("linear")
+                            .duration(default_transition_delay)
                         .attr("transform", "translate(" + -1 * x(1) + ")");
+                    }
 
                     chart.selectAll("path")
                         .data(my_line_chart.historical_values)
@@ -593,21 +611,25 @@ var live_charts = function(my) {
 
         };
 
+        my_chart.transition_lines = function(){
+            if (chart){
+                paused = true;
+                chart.selectAll("path")
+                    .data(my_line_chart.historical_values)
+                    .transition()
+                    .ease("linear")
+                    .duration(default_transition_delay)
+                    .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
+                    .each("end", function() { paused = false;});
+            }
+        };
+
         my_chart.stacked = function(value){
             if (!arguments.length) return stacked;
 
             if (stacked != value){
                 stacked = value;
-                if (chart){
-                    paused = true;
-                    chart.selectAll("path")
-                        .data(my_line_chart.historical_values)
-                        .transition()
-                        .ease("linear")
-                        .duration(default_transition_delay)
-                        .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
-                        .each("end", function() { paused = false;});
-                }
+                this.transition_lines();
             }
             return this;
         };
@@ -615,12 +637,14 @@ var live_charts = function(my) {
         my_chart.width = function(value){
             if (!arguments.length) return width;
             width = value;
+            width_changed = true;
             return this;
         };
 
         my_chart.height = function(value){
             if (!arguments.length) return height;
             height = value;
+            height_changed = true;
             return this;
         };
 
