@@ -1,7 +1,6 @@
 
 var fs = require('fs');
 var os = require('os');
-var sys = require('sys');
 var data = require("./source.json");
 var WebSocketServer = require('ws').Server;
 
@@ -11,7 +10,7 @@ watch = fs.watchFile("./source.json", function(event){
 	fs.readFile("./source.json", function(err, file_contents){
 		if(err) throw err;
 		data = JSON.parse(file_contents);
-		console.log(data)
+		console.log(data);
 	});
 });
 
@@ -21,17 +20,17 @@ wss.on('connection', function(ws) {
 
 	var interval = setInterval(function(){
 		var tmp_rand = {};
+		var random_entry = function(e){
+			return {name : e,
+					value: Math.floor(Math.random() * 100)
+					};
+				};
 
-		for (set in data){
-			var random_set = data[set].map(function(e){ 
-				return {name : e, 
-						value: Math.floor(Math.random() * 100)
-						}
-					});
-
+		for (var set in data){
+			var random_set = data[set].map(random_entry);
 			tmp_rand[set] = random_set;
 		}
-		
+
 		tmp_rand["Memory"] = [];
 
 		tmp_rand["Memory"].push({"name": "Used Mem", "value": Math.round(((os.totalmem() - os.freemem()) / os.totalmem()) * 100)});
