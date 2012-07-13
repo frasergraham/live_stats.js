@@ -146,7 +146,7 @@ var live_charts = (function(my) {
                             my_line_chart.historical_values.splice(set_index, 1);
                             delete my_line_chart.index_map[set];
 
-                            // I've altered the indeces ofr the data I need to fix them
+                            // I've altered the indeces of the data I need to fix them
                             for (i=set_index; i < my_line_chart.historical_values.length; i++){
                                 var chart_name = my_line_chart.historical_values[i][0].name;
                                 my_line_chart.index_map[chart_name] = i;
