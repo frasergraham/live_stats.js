@@ -30,5 +30,20 @@
 
 .values{
   font: 24px sans-serif;
-  fill:lightgray;
+  fill: lightgray;
+}
+
+.mover {
+  cursor: move;
+  user-select: none;
+}
+
+body {
+  user-select: none;
+}
+
+.line {
+  background: black;
+  opacity: .2;
+  z-index: 2;
 }

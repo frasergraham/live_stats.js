@@ -32,6 +32,7 @@
                                     .width(800)
                                     .height(300)
                                     .stacked(true)
+                                    .saved_points(100)
                                     .data_source("group_1")
                                     .bind("#test_1");
 
@@ -46,6 +47,45 @@
                                     .height(300)
                                     .data_source("group_1")
                                     .bind("#test_2");
+
+
+              var dragging_height = false;
+              var start;
+              var initial_height = test_line.height();
+
+              $("#drag_height").mousedown(function(event){
+                start = event.pageY;
+                dragging_height = true;
+                test_line.transition_delay(10);
+
+                if (event && event.preventDefault) {
+                   event.preventDefault();
+                }
+              });
+
+              $("html").mouseup(function(event){
+                dragging_height = false;
+                test_line.transition_delay("auto");
+
+                var dist = event.pageY - start;
+                console.log(dist);
+                if (dist > 10 || dist < -10){
+                  test_line.height(Math.max(initial_height + dist, 50) );
+                }
+                $("#hline").css({"top": event.pageY + "px", "display": "none"});
+                initial_height = test_line.height();
+              });
+
+              $("html").mousemove(function(event){
+                if (dragging_height){
+
+                  $("#hline").css({"top": event.pageY + "px", "display": "block"});
+                }
+
+                if (event && event.preventDefault) {
+                   event.preventDefault();
+                }
+              });
         });
 
         $("#toggle_stacked").click(function(){
@@ -68,6 +108,9 @@
           test_line.height(test_line.height() - 100);
         });
 
+
+
+
       });
     </script>
 
@@ -75,7 +118,10 @@
 
   </head>
   <body>
+    <div id="hline" class="line" style="position: absolute; top: 0px; bottom: 0px; width: 100%; height: 2px; pointer-events: none; "></div>
+
     <p id="test_1"></p>
+    <div class="mover" id="drag_height">DRAG ME</div>
     <a href="#" id="toggle_stacked">TOGGLE STACKED</a>
     <a href="#" id="wider">WIDER</a>
     <a href="#" id="narrower">NARROWER</a>

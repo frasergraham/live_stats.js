@@ -303,7 +303,7 @@ var live_charts = (function(my) {
                             })
                             .transition()
                             .ease("linear")
-                            .duration(transition_delay)
+                            .duration(_settings.default_transition_delay)
                         .attr("transform", "translate(" + -1 * x(1) + ")");
                     }
 
@@ -354,6 +354,22 @@ var live_charts = (function(my) {
             if (!arguments.length) return height;
             height = value;
             height_changed = true;
+            return this;
+        };
+
+        my_chart.pause = function(value){
+            if (!arguments.length) return paused;
+            paused = value;
+            return this;
+        };
+
+        my_chart.transition_delay = function(value){
+            if (!arguments.length) return transition_delay;
+            if (value == "auto"){
+                transition_delay = _settings.default_transition_delay;
+            } else {
+                transition_delay = value;
+            }
             return this;
         };
 
