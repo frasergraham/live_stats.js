@@ -105,6 +105,7 @@ var live_charts = (function(my) {
                         }
                         console.log("New Data " + name + " added at index " + new_index);
                         my_line_chart.index_map[name] = new_index;
+                        height_changed = true;
                     }
 
                     // append new values to historicals, slide old ones off the end
@@ -145,6 +146,7 @@ var live_charts = (function(my) {
                             console.log(set + " is ZERO");
                             my_line_chart.historical_values.splice(set_index, 1);
                             delete my_line_chart.index_map[set];
+                            height_changed = true;
 
                             // I've altered the indeces of the data I need to fix them
                             for (i=set_index; i < my_line_chart.historical_values.length; i++){
