@@ -27,29 +27,29 @@ var live_charts = function(my) {
         if (!arguments.length) return default_width;
         default_width = width;
         return my;
-    }
+    };
 
     my.default_height = function(height){
         if (!arguments.length) return default_height;
         default_height = height;
         return my;
-    }
+    };
 
     my.default_transition_delay = function(delay){
         if (!arguments.length) return default_transition_delay;
         default_transition_delay = delay;
         return my;
-    }
+    };
 
     my.default_chart_factory = function(chart_factory){
         default_chart_factory = chart_factory;
         return my;
-    }
+    };
 
     my.default_selector =  function(selector){
         default_selector = selector;
         return my;
-    }
+    };
 
     // base object to construct all our data source objects from
     var Connection = function(server){
@@ -67,6 +67,10 @@ var live_charts = function(my) {
 
             my_connection.connection = new WebSocket(websocket_server, null);
 
+            my_connection.onerror = function (error) {
+              console.log('WebSocket Error ' + error);
+            };
+
             my_connection.connection.onopen = function(){
                 console.log("Connected to " + websocket_server);
             };
@@ -83,10 +87,10 @@ var live_charts = function(my) {
 
                 var num_groups = my_connection.data_groups.length;
 
-                for (group in new_data){
+                for (var group in new_data){
                     var exists = false;
 
-                    for (existing_group in my_connection.data_groups){
+                    for (var existing_group in my_connection.data_groups){
                         if (my_connection.data_groups[existing_group] == group){
                             exists = true;
                         }
@@ -122,7 +126,7 @@ var live_charts = function(my) {
 
         my_connection.data_sets = function(){
             return my_connection.data_groups;
-        }
+        };
 
         return my_connection;
     };
@@ -144,7 +148,8 @@ var live_charts = function(my) {
     // Charts are created with a server and a place in the DOM to put them
     // All the contents of the chart will come from the server
     Connection.prototype.bar_chart = function bar_chart(){
-        var width = default_width
+
+        var width = default_width;
         var height = default_height;
         var transition_delay = default_transition_delay;
         var data_source = null;
@@ -301,10 +306,10 @@ var live_charts = function(my) {
         };
 
         return my_chart;
-    }
+    };
 
     Connection.prototype.line_chart = function line_chart(){
-        var width = default_width
+        var width = default_width;
         var height = default_height;
         var transition_delay = default_transition_delay;
         var saved_points = 100;
@@ -320,7 +325,7 @@ var live_charts = function(my) {
             var margin = 80;
             var right_margin = 30;
             var data = [];
-            var x, y;
+
             color = d3.scale.category20();
 
             chart = d3.select(selector)
@@ -356,7 +361,7 @@ var live_charts = function(my) {
                 .x(function(d,i){ return x(i); })
                 .y(function(d,i){
                     if (stacked){
-                        var a = -1.0 * (y(d.value) / y_bands.domain().length)
+                        var a = -1.0 * (y(d.value) / y_bands.domain().length);
                         var b = y_bands(d.name);
                         var result = a + height - b;
                         return result;
@@ -390,7 +395,7 @@ var live_charts = function(my) {
                              my_line_chart.historical_values[new_index][len] = {name:data_src[data_set].name, value:1};
                         }
                         console.log("New Data " + name + " added at index " + new_index);
-                        my_line_chart.index_map[name] = new_index
+                        my_line_chart.index_map[name] = new_index;
                     }
 
                     // append new values to historicals, slide old ones off the end
@@ -434,9 +439,9 @@ var live_charts = function(my) {
 
                             // I've altered the indeces ofr the data I need to fix them
                             for (i=set_index; i < my_line_chart.historical_values.length; i++){
-                                var name = my_line_chart.historical_values[i][0].name;
-                                my_line_chart.index_map[name] = i;
-                                console.log(name + " moved to index " + i);
+                                var chart_name = my_line_chart.historical_values[i][0].name;
+                                my_line_chart.index_map[chart_name] = i;
+                                console.log(chart_name + " moved to index " + i);
                             }
                         }
                     }
@@ -463,8 +468,8 @@ var live_charts = function(my) {
 
                 if (stacked){
                     var bands = [];
-                    for (name in my_line_chart.index_map){
-                        bands.push(name);
+                    for (var band_name in my_line_chart.index_map){
+                        bands.push(band_name);
                     }
 
                     y_bands.domain(bands)
@@ -511,7 +516,7 @@ var live_charts = function(my) {
                         .data(my_line_chart.historical_values)
                         .transition()
                         .duration(default_transition_delay)
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; });
 
                     chart.selectAll("text.yAxis")
                         .data(my_line_chart.historical_values)
@@ -601,11 +606,11 @@ var live_charts = function(my) {
                         .ease("linear")
                         .duration(default_transition_delay)
                         .attr("d", function(d,i){ return line(my_line_chart.historical_values[i]);})
-                        .each("end", function() { paused = false;})
+                        .each("end", function() { paused = false;});
                 }
             }
             return this;
-        }
+        };
 
         my_chart.width = function(value){
             if (!arguments.length) return width;
@@ -638,10 +643,10 @@ var live_charts = function(my) {
         };
 
         return my_chart;
-    }
+    };
 
     Connection.prototype.pie_chart = function pie_chart(){
-        var width = default_width
+        var width = default_width;
         var height = default_height;
         var transition_delay = default_transition_delay;
         var data_source = null;
@@ -783,7 +788,7 @@ var live_charts = function(my) {
         };
 
         return my_chart;
-    }
+    };
 
     return my;
 
