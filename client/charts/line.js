@@ -31,8 +31,8 @@ var live_charts = (function(my) {
         var line;
 
         var my_chart = function my_chart(selector){
-            var margin = 80;
-            var right_margin = 30;
+            var margin = 0;
+            var right_margin = 100;
             var data = [];
 
             color = d3.scale.category20();
@@ -179,89 +179,92 @@ var live_charts = (function(my) {
                 y.domain([0,100])
                  .range([0, height]);
 
-                if (stacked){
-                    var bands = [];
-                    for (var band_name in my_line_chart.index_map){
-                        bands.push(band_name);
-                    }
 
-                    y_bands.domain(bands)
-                        .rangeBands([0,height]);
-
-                    // Horizontal bars between graphs
-                    chart.selectAll("line")
-                        .data(my_line_chart.historical_values)
-                        .enter().append("line")
-                        .attr("x1", 0)
-                        .attr("x2", width - margin - x(2))
-                        .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-                        .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-                        .style("stroke", "#ccc");
-
-                    chart.selectAll("line")
-                        .data(my_line_chart.historical_values)
-                        .transition()
-                        .duration(transition_delay)
-                        .attr("x1", 0)
-                        .attr("x2", width - margin - x(2))
-                        .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
-                        .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
-
-                    chart.selectAll("line")
-                        .data(my_line_chart.historical_values)
-                        .exit()
-                        .remove();
-
-
-                    // Labels on each graph line
-                    chart.selectAll("text.yAxis")
-                        .data(my_line_chart.historical_values)
-                        .enter()
-                        .append("svg:text")
-                        .attr("x", -margin)
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-                        .attr("dx", 0) // padding-right
-                        .attr("dy", ".35em") // vertical-align: middle
-                        .attr("class", "yAxis")
-                        .text(function(d,i){return String(d[0].name);});
-
-                    chart.selectAll("text.yAxis")
-                        .data(my_line_chart.historical_values)
-                        .transition()
-                        .duration(transition_delay)
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; });
-
-                    chart.selectAll("text.yAxis")
-                        .data(my_line_chart.historical_values)
-                        .exit()
-                        .remove();
-
-                    // values displayed for most recent data point at end of line
-                    chart.selectAll("text.values")
-                        .data(my_line_chart.historical_values)
-                        .enter()
-                        .append("svg:text")
-                        .attr("x", width + right_margin - margin - x(1))
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-                        .attr("dx", 0) // padding-right
-                        .attr("dy", ".35em") // vertical-align: middle
-                        .attr("class", "values")
-                        .attr("text-anchor", "end") // text-align: right
-                        .text(function(d,i){return String(d[0].value);});
-
-                    chart.selectAll("text.values")
-                        .data(my_line_chart.historical_values)
-                        .transition()
-                        .duration(transition_delay)
-                        .attr("x", width + right_margin - margin - x(1))
-                        .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-                        .text(function(d,i){return String(d[d.length-1].value);});
-
-                    chart.selectAll("text.values")
-                        .data(my_line_chart.historical_values)
-                        .exit()
-                        .remove();
+                var bands = [];
+                for (var band_name in my_line_chart.index_map){
+                    bands.push(band_name);
                 }
+
+                y_bands.domain(bands)
+                    .rangeBands([0,height]);
+
+                // Horizontal bars between graphs
+                chart.selectAll("line")
+                    .data(my_line_chart.historical_values)
+                    .enter().append("line")
+                    .attr("x1", 0)
+                    .attr("x2", width - margin - x(2))
+                    .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+                    .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+                    .style("stroke", "#ccc");
+
+                chart.selectAll("line")
+                    .data(my_line_chart.historical_values)
+                    .transition()
+                    .duration(transition_delay)
+                    .attr("x1", 0)
+                    .attr("x2", width - margin - x(2))
+                    .attr("y1", function(d,i){ return -1.0 * y_bands(d[0].name) + height;})
+                    .attr("y2", function(d,i){ return -1.0 * y_bands(d[0].name) + height;});
+
+                chart.selectAll("line")
+                    .data(my_line_chart.historical_values)
+                    .exit()
+                    .remove();
+
+
+                // // Labels on each graph line
+                // chart.selectAll("text.yAxis")
+                //     .data(my_line_chart.historical_values)
+                //     .enter()
+                //     .append("svg:text")
+                //     .attr("x", -margin)
+                //     .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+                //     .attr("dx", 0) // padding-right
+                //     .attr("dy", ".35em") // vertical-align: middle
+                //     .attr("class", "yAxis")
+                //     .attr("fill", function(d, i) { return color(i); })
+                //     .text(function(d,i){return String(d[0].name);});
+
+                // chart.selectAll("text.yAxis")
+                //     .data(my_line_chart.historical_values)
+                //     .transition()
+                //     .duration(transition_delay)
+                //     .attr("fill", function(d, i) { return color(i); })
+                //     .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; });
+
+                // chart.selectAll("text.yAxis")
+                //     .data(my_line_chart.historical_values)
+                //     .exit()
+                //     .remove();
+
+                // values displayed for most recent data point at end of line
+                chart.selectAll("text.values")
+                    .data(my_line_chart.historical_values)
+                    .enter()
+                    .append("svg:text")
+                    .attr("x", width + right_margin - margin - x(1))
+                    .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+                    .attr("dx", 0) // padding-right
+                    .attr("dy", ".35em") // vertical-align: middle
+                    .attr("class", "values")
+                    .attr("text-anchor", "end") // text-align: right
+                    .attr("fill", function(d, i) { return color(i); })
+                    .text(function(d,i){return String(d[0].name) + "  " + String(d[0].value);});
+
+                chart.selectAll("text.values")
+                    .data(my_line_chart.historical_values)
+                    .transition()
+                    .duration(transition_delay)
+                    .attr("x", width + right_margin - margin - x(1))
+                    .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
+                    .attr("fill", function(d, i) { return color(i); })
+                    .text(function(d,i){return String(d[0].name) + "  " + String(d[d.length-1].value);});
+
+                chart.selectAll("text.values")
+                    .data(my_line_chart.historical_values)
+                    .exit()
+                    .remove();
 
                 if (!paused){
 
