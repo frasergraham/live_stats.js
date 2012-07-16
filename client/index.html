@@ -2,6 +2,7 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
     <script type="text/javascript" src="d3.v2.js"></script>
     <script type="text/javascript" src="live_charts.js"></script>
@@ -36,26 +37,32 @@
                                     .data_source("group_1")
                                     .bind("#test_1");
 
-              test_bar = connection.bar_chart()
-                                    .width(200)
-                                    .height(300)
-                                    .data_source("group_1")
-                                    .bind("#test_2");
+              // test_bar = connection.bar_chart()
+              //                       .width(200)
+              //                       .height(300)
+              //                       .data_source("group_1")
+              //                       .bind("#test_2");
 
-              test_pie = connection.pie_chart()
-                                    .width(300)
-                                    .height(300)
-                                    .data_source("group_1")
-                                    .bind("#test_2");
+              // test_pie = connection.pie_chart()
+              //                       .width(300)
+              //                       .height(300)
+              //                       .data_source("group_1")
+              //                       .bind("#test_2");
 
 
-              var dragging_height = false;
-              var start;
+              var dragging = false;
+              var startY, startX;
               var initial_height = test_line.height();
+              var initial_width = test_line.width();
 
-              $("#drag_height").mousedown(function(event){
-                start = event.pageY;
-                dragging_height = true;
+              var updown = $("<div id='group_1_mover' class='mover'>✛</div> ");
+              $("#test_1 > .chart").after(updown);
+              $(updown).css({"width" : 25, "margin-left" : test_line.width()});
+
+              $("#group_1_mover").mousedown(function(event){
+                startY = event.pageY;
+                startX = event.pageX;
+                dragging = true;
                 test_line.transition_delay(10);
 
                 if (event && event.preventDefault) {
@@ -64,22 +71,37 @@
               });
 
               $("html").mouseup(function(event){
-                dragging_height = false;
-                test_line.transition_delay("auto");
+                if (dragging){
+                  dragging = false;
+                  test_line.transition_delay("auto");
 
-                var dist = event.pageY - start;
-                console.log(dist);
-                if (dist > 10 || dist < -10){
-                  test_line.height(Math.max(initial_height + dist, 50) );
+                  var distY = event.pageY - startY;
+                  console.log("y: " + distY);
+                  if (distY > 10 || distY < -10){
+                    test_line.height(Math.max(initial_height + distY, 50) );
+                  }
+
+                  $("#hline").css({"top": event.pageY + "px", "display": "none"});
+
+                  initial_height = test_line.height();
+
+                  var distX = event.pageX - startX;
+                  console.log("x: " + distX);
+                  if (distX > 10 || distX < -10){
+                    test_line.width(Math.max(initial_width + distX, 50) );
+                  }
+
+                  $("#vline").css({"left": event.pageX + "px", "display": "none"});
+                  $("#group_1_mover").css({"margin-left" : test_line.width()});
+                  initial_width = test_line.width();
                 }
-                $("#hline").css({"top": event.pageY + "px", "display": "none"});
-                initial_height = test_line.height();
               });
 
               $("html").mousemove(function(event){
-                if (dragging_height){
+                if (dragging){
 
                   $("#hline").css({"top": event.pageY + "px", "display": "block"});
+                  $("#vline").css({"left": event.pageX + "px", "display": "block"});
                 }
 
                 if (event && event.preventDefault) {
@@ -91,42 +113,20 @@
         $("#toggle_stacked").click(function(){
           test_line.stacked(!test_line.stacked());
         });
-
-        $("#wider").click(function(){
-          test_line.width(test_line.width() + 100 );
-        });
-
-        $("#narrower").click(function(){
-          test_line.width(test_line.width() - 100);
-        });
-
-        $("#taller").click(function(){
-          test_line.height(test_line.height() + 100 );
-        });
-
-        $("#shorter").click(function(){
-          test_line.height(test_line.height() - 100);
-        });
-
-
-
-
       });
+
     </script>
 
     <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
 
   </head>
   <body>
-    <div id="hline" class="line" style="position: absolute; top: 0px; bottom: 0px; width: 100%; height: 2px; pointer-events: none; "></div>
 
+
+    <div id="hline" class="hline"></div>
+    <div id="vline" class="vline"></div>
     <p id="test_1"></p>
-    <div class="mover" id="drag_height">DRAG ME</div>
     <a href="#" id="toggle_stacked">TOGGLE STACKED</a>
-    <a href="#" id="wider">WIDER</a>
-    <a href="#" id="narrower">NARROWER</a>
-    <a href="#" id="taller">TALLER</a>
-    <a href="#" id="shorter">SHORTER</a>
 
     <p id="test_2"></p>
     <p id="test_3"></p>
