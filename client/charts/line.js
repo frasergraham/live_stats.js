@@ -33,6 +33,7 @@ var live_charts = (function(my) {
         var my_chart = function my_chart(selector){
             var margin = 0;
             var right_margin = 100;
+            var xaxis_margin = 30;
             var data = [];
 
             color = d3.scale.category20();
@@ -42,20 +43,26 @@ var live_charts = (function(my) {
                 .attr("class", "chart")
                 .attr("id", "linechart_" + data_source)
                 .attr("width", width + right_margin)
-                .attr("height", height + 10)
+                .attr("height", height + xaxis_margin)
                 .append("g")        // this is a group tag
-                .attr("transform", "translate(" + margin + ",5)");
+                .attr("transform", "translate(" + margin + ",0)");
 
             // define scales
             var x = d3.scale.linear()
                 .domain([0, saved_points])
                 .range([0, width - margin]);
 
+            var fake_x = d3.scale.linear()
+                .domain([0, saved_points - 2])
+                .range([0, width - margin - x(2)]);
+
             var y = d3.scale.linear()
                 .domain([0,100])
                 .range([0, height]);
 
             var y_bands;
+
+            var xAxis = d3.svg.axis().scale(fake_x).tickSize(-height).tickValues([10,20,30,40,50,60,70,80,90]);
 
             chart.append("defs")
                 .append("clipPath")
@@ -84,6 +91,12 @@ var live_charts = (function(my) {
             // data storage, we're going to want to store the last X values of everything
             my_line_chart.historical_values = [];
             my_line_chart.index_map = {};
+
+            d3.select("svg")
+                .append("svg:g")
+                .attr("class", "xaxis")
+                .attr("transform", "translate(0," + (height) + ")")
+                .call(xAxis);
 
             // draw function
             my_line_chart.redraw = function(data_src){
@@ -163,8 +176,7 @@ var live_charts = (function(my) {
                     .transition()
                     .duration(transition_delay)
                     .attr("width", width + right_margin)
-                    .attr("height", height + 10);
-
+                    .attr("height", height + xaxis_margin);
 
                 d3.select("#clip")
                     .select("rect")
@@ -176,9 +188,19 @@ var live_charts = (function(my) {
                 x.domain([0, my_line_chart.historical_values[my_line_chart.index_map[name]].length])
                  .range([0, width - margin]);
 
+                fake_x.domain([0, my_line_chart.historical_values[my_line_chart.index_map[name]].length - 2])
+                 .range([0, width - margin - x(2)]);
+
                 y.domain([0,100])
                  .range([0, height]);
 
+                 xAxis.tickSize(-height);
+
+                d3.select("svg .xaxis")
+                    .transition()
+                    .duration(transition_delay)
+                    .attr("transform", "translate(0," + (height) + ")")
+                    .call(xAxis);
 
                 var bands = [];
                 for (var band_name in my_line_chart.index_map){

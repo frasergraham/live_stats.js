@@ -29,6 +29,7 @@
 }
 
 .values{
+  cursor: pointer;
 }
 
 .mover {
@@ -66,4 +67,19 @@ body {
   width: 2px;
   pointer-events: none;
   display: none;
+}
+
+.axis {
+  shape-rendering: crispEdges;
+}
+
+.xaxis line{
+  fill: none;
+  stroke: #000;
+  opacity: 0.1;
+}
+
+.xaxis path {
+  fill: none;
+  stroke: #000;
 }
