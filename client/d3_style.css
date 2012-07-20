@@ -23,9 +23,17 @@
 }
 
 .line_chart {
-	stroke-width: 2;
-	fill: none;
+  stroke-width: 2;
+  fill: none;
   shape-rendering: auto;
+}
+
+.line_chart_selected {
+  stroke-width: 3;
+}
+
+.line_chart_unselected {
+  stroke-width: 1;
 }
 
 .values{
@@ -69,7 +77,8 @@ body {
   display: none;
 }
 
-.axis {
+.xaxis {
+  font-weight: normal;
   shape-rendering: crispEdges;
 }
 

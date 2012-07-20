@@ -28,14 +28,94 @@
 
           var connection = live_charts.connect_to_data_source("ws://localhost:8080",
             function(data_groups){
+              var data;
+              d3.json("test_data.json", function(test_data){
+                data = test_data;
 
-              test_line = connection.line_chart()
-                                    .width(800)
-                                    .height(300)
-                                    .stacked(true)
-                                    .saved_points(100)
-                                    .data_source("group_1")
-                                    .bind("#test_1");
+                test_line = connection.line_chart()
+                                      .width(800)
+                                      .height(300)
+                                      .stacked(true)
+                                      .saved_points(30)
+                                      .data(data)
+                                      .bind("#test_1");
+
+                var dragging = false;
+                var startY, startX;
+                var initial_height = test_line.height();
+                var initial_width = test_line.width();
+
+                var updown = $("<div id='group_1_mover' class='mover'>✛</div> ");
+                $("#test_1 > .chart").after(updown);
+                $(updown).css({"width" : 25, "margin-left" : test_line.width()});
+
+                $("#group_1_mover").mousedown(function(event){
+                  startY = event.pageY;
+                  startX = event.pageX;
+                  dragging = true;
+                  test_line.transition_delay(10);
+
+                  if (event && event.preventDefault) {
+                     event.preventDefault();
+                  }
+                });
+
+                $("html").mouseup(function(event){
+                  if (dragging){
+                    dragging = false;
+                    test_line.transition_delay("auto");
+
+                    var distY = event.pageY - startY;
+                    console.log("y: " + distY);
+                    if (distY > 10 || distY < -10){
+                      test_line.height(Math.max(initial_height + distY, 50) );
+                    }
+
+                    $("#hline").css({"top": event.pageY + "px", "display": "none"});
+
+                    initial_height = test_line.height();
+
+                    var distX = event.pageX - startX;
+                    console.log("x: " + distX);
+                    if (distX > 10 || distX < -10){
+                      test_line.width(Math.max(initial_width + distX, 50) );
+                    }
+
+                    $("#vline").css({"left": event.pageX + "px", "display": "none"});
+                    $("#group_1_mover").css({"margin-left" : test_line.width()});
+                    initial_width = test_line.width();
+                  }
+                });
+
+                $("html").mousemove(function(event){
+                  if (dragging){
+
+                    $("#hline").css({"top": event.pageY + "px", "display": "block"});
+                    $("#vline").css({"left": event.pageX + "px", "display": "block"});
+                  }
+
+                  if (event && event.preventDefault) {
+                     event.preventDefault();
+                  }
+                });
+
+              });
+
+              // test_line2 = connection.line_chart()
+              //                       .width(800)
+              //                       .height(300)
+              //                       .stacked(true)
+              //                       .saved_points(100)
+              //                       .data_source("group_1")
+              //                       .bind("#test_2");
+
+              // test_line3 = connection.line_chart()
+              //                       .width(800)
+              //                       .height(300)
+              //                       .stacked(true)
+              //                       .saved_points(100)
+              //                       .data_source("group_2")
+              //                       .bind("#test_2");
 
               // test_bar = connection.bar_chart()
               //                       .width(200)
@@ -50,64 +130,6 @@
               //                       .bind("#test_2");
 
 
-              var dragging = false;
-              var startY, startX;
-              var initial_height = test_line.height();
-              var initial_width = test_line.width();
-
-              var updown = $("<div id='group_1_mover' class='mover'>✛</div> ");
-              $("#test_1 > .chart").after(updown);
-              $(updown).css({"width" : 25, "margin-left" : test_line.width()});
-
-              $("#group_1_mover").mousedown(function(event){
-                startY = event.pageY;
-                startX = event.pageX;
-                dragging = true;
-                test_line.transition_delay(10);
-
-                if (event && event.preventDefault) {
-                   event.preventDefault();
-                }
-              });
-
-              $("html").mouseup(function(event){
-                if (dragging){
-                  dragging = false;
-                  test_line.transition_delay("auto");
-
-                  var distY = event.pageY - startY;
-                  console.log("y: " + distY);
-                  if (distY > 10 || distY < -10){
-                    test_line.height(Math.max(initial_height + distY, 50) );
-                  }
-
-                  $("#hline").css({"top": event.pageY + "px", "display": "none"});
-
-                  initial_height = test_line.height();
-
-                  var distX = event.pageX - startX;
-                  console.log("x: " + distX);
-                  if (distX > 10 || distX < -10){
-                    test_line.width(Math.max(initial_width + distX, 50) );
-                  }
-
-                  $("#vline").css({"left": event.pageX + "px", "display": "none"});
-                  $("#group_1_mover").css({"margin-left" : test_line.width()});
-                  initial_width = test_line.width();
-                }
-              });
-
-              $("html").mousemove(function(event){
-                if (dragging){
-
-                  $("#hline").css({"top": event.pageY + "px", "display": "block"});
-                  $("#vline").css({"left": event.pageX + "px", "display": "block"});
-                }
-
-                if (event && event.preventDefault) {
-                   event.preventDefault();
-                }
-              });
         });
 
         $("#toggle_stacked").click(function(){

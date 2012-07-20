@@ -1,6 +1,11 @@
 live_stats Client TODO
 ----------------------
 
+X Axis ticks when saved points changes
+- multiple line graphs and axis
+- Can't do anything without a websocket connection
+
+
 - Different Chart Types
 	O Line
 		- Key for overlays

@@ -62,7 +62,15 @@ var live_charts = (function(my) {
 
             var y_bands;
 
-            var xAxis = d3.svg.axis().scale(fake_x).tickSize(-height).tickValues([10,20,30,40,50,60,70,80,90]);
+            var ticks = [];
+            for (var tick = 10; tick < saved_points; tick += 10){
+                ticks.push(tick);
+            }
+
+            var xAxis = d3.svg.axis()
+                        .scale(fake_x)
+                        .tickSize(-height)
+                        .tickValues(ticks);
 
             chart.append("defs")
                 .append("clipPath")
@@ -88,11 +96,14 @@ var live_charts = (function(my) {
                 })
                 .interpolate("monotone");
 
-            // data storage, we're going to want to store the last X values of everything
-            my_line_chart.historical_values = [];
-            my_line_chart.index_map = {};
+            // data storage, we're going to want to store
+            //  the last X values of everything
+            if (my_line_chart.historical_values === undefined){
+                my_line_chart.historical_values = [];
+                my_line_chart.index_map = {};
+            }
 
-            d3.select("svg")
+            d3.select("#linechart_" + data_source)
                 .append("svg:g")
                 .attr("class", "xaxis")
                 .attr("transform", "translate(0," + (height) + ")")
@@ -101,71 +112,74 @@ var live_charts = (function(my) {
             // draw function
             my_line_chart.redraw = function(data_src){
 
-                // Manage the data update, appending new data to the historical and shifting
-                // old data off the end.
-                var updated = [];
-                for (var data_set in data_src){
-                    var name = data_src[data_set].name;
+                if (typeof(data_src) !== 'undefined'){
 
-                    // If this is new data, then make an array for it in the historicals and
-                    // pre-fill it with zeroes to that we always slide in from the left
-                    if (!my_line_chart.historical_values[my_line_chart.index_map[name]]){
-                        var new_set = [];
-                        var new_index = my_line_chart.historical_values.push(new_set) - 1;
-                        var len = saved_points;
-                        while (len--){
-                             my_line_chart.historical_values[new_index][len] = {name:data_src[data_set].name, value:1};
-                        }
-                        console.log("New Data " + name + " added at index " + new_index);
-                        my_line_chart.index_map[name] = new_index;
-                        height_changed = true;
-                    }
+                    // Manage the data update, appending new data to the historical and shifting
+                    // old data off the end.
+                    var updated = [];
+                    for (var data_set in data_src){
+                        var name = data_src[data_set].name;
 
-                    // append new values to historicals, slide old ones off the end
-                    my_line_chart.historical_values[my_line_chart.index_map[name]].push(data_src[data_set]);
-
-                    // We shift until we're at saved point size, this serves to truncate if we adjust saved
-                    // point size and have too much data.
-                    while (my_line_chart.historical_values[my_line_chart.index_map[name]].length > saved_points){
-                        my_line_chart.historical_values[my_line_chart.index_map[name]].shift();
-                    }
-
-                    // track the ones we have updated, if something isn't being updated then
-                    // the data source has stopped and it needs empty data until we run out
-                    updated.push(name);
-                }
-
-                // Check for dead data, as soon as everything is 0 then that data entry goes away
-                for (var set in my_line_chart.index_map){
-                    var set_index = my_line_chart.index_map[set];
-                    // Provice empty data for sets that have stopped sending
-                    if (updated.indexOf(set) >= 0){
-                        continue;
-                    }
-                    else{
-                        console.log(set + set_index + " was not updated");
-                        var last_entry = my_line_chart.historical_values[set_index].shift();
-
-                        my_line_chart.historical_values[set_index].push({name:set, value:0});
-
-                        // If a data set has stopped sending,
-                        // once all the values are zero then we should remove it entirely
-                        var sum = 0, index =  my_line_chart.historical_values[set_index].length;
-                        while (index--){
-                            sum +=  my_line_chart.historical_values[set_index][index].value;
-                        }
-
-                        if (sum === 0){
-                            console.log(set + " is ZERO");
-                            my_line_chart.historical_values.splice(set_index, 1);
-                            delete my_line_chart.index_map[set];
+                        // If this is new data, then make an array for it in the historicals and
+                        // pre-fill it with zeroes to that we always slide in from the left
+                        if (!my_line_chart.historical_values[my_line_chart.index_map[name]]){
+                            var new_set = [];
+                            var new_index = my_line_chart.historical_values.push(new_set) - 1;
+                            var len = saved_points;
+                            while (len--){
+                                 my_line_chart.historical_values[new_index][len] = {name:data_src[data_set].name, value:1};
+                            }
+                            console.log("New Data " + name + " added at index " + new_index);
+                            my_line_chart.index_map[name] = new_index;
                             height_changed = true;
+                        }
 
-                            // I've altered the indeces of the data I need to fix them
-                            for (i=set_index; i < my_line_chart.historical_values.length; i++){
-                                var chart_name = my_line_chart.historical_values[i][0].name;
-                                my_line_chart.index_map[chart_name] = i;
-                                console.log(chart_name + " moved to index " + i);
+                        // append new values to historicals, slide old ones off the end
+                        my_line_chart.historical_values[my_line_chart.index_map[name]].push(data_src[data_set]);
+
+                        // We shift until we're at saved point size, this serves to truncate if we adjust saved
+                        // point size and have too much data.
+                        while (my_line_chart.historical_values[my_line_chart.index_map[name]].length > saved_points){
+                            my_line_chart.historical_values[my_line_chart.index_map[name]].shift();
+                        }
+
+                        // track the ones we have updated, if something isn't being updated then
+                        // the data source has stopped and it needs empty data until we run out
+                        updated.push(name);
+                    }
+
+                    // Check for dead data, as soon as everything is 0 then that data entry goes away
+                    for (var set in my_line_chart.index_map){
+                        var set_index = my_line_chart.index_map[set];
+                        // Provice empty data for sets that have stopped sending
+                        if (updated.indexOf(set) >= 0){
+                            continue;
+                        }
+                        else{
+                            console.log(set + set_index + " was not updated");
+                            var last_entry = my_line_chart.historical_values[set_index].shift();
+
+                            my_line_chart.historical_values[set_index].push({name:set, value:0});
+
+                            // If a data set has stopped sending,
+                            // once all the values are zero then we should remove it entirely
+                            var sum = 0, index =  my_line_chart.historical_values[set_index].length;
+                            while (index--){
+                                sum +=  my_line_chart.historical_values[set_index][index].value;
+                            }
+
+                            if (sum === 0){
+                                console.log(set + " is ZERO");
+                                my_line_chart.historical_values.splice(set_index, 1);
+                                delete my_line_chart.index_map[set];
+                                height_changed = true;
+
+                                // I've altered the indeces of the data I need to fix them
+                                for (i=set_index; i < my_line_chart.historical_values.length; i++){
+                                    var chart_name = my_line_chart.historical_values[i][0].name;
+                                    my_line_chart.index_map[chart_name] = i;
+                                    console.log(chart_name + " moved to index " + i);
+                                }
                             }
                         }
                     }
@@ -185,18 +199,18 @@ var live_charts = (function(my) {
                     .attr("width", width - margin - x(2))
                     .attr("height", height);
 
-                x.domain([0, my_line_chart.historical_values[my_line_chart.index_map[name]].length])
+                x.domain([0, saved_points])
                  .range([0, width - margin]);
 
-                fake_x.domain([0, my_line_chart.historical_values[my_line_chart.index_map[name]].length - 2])
+                fake_x.domain([0, saved_points - 2])
                  .range([0, width - margin - x(2)]);
 
                 y.domain([0,100])
                  .range([0, height]);
 
-                 xAxis.tickSize(-height);
+                xAxis.tickSize(-height);
 
-                d3.select("svg .xaxis")
+                d3.select("#linechart_" + data_source + " .xaxis")
                     .transition()
                     .duration(transition_delay)
                     .attr("transform", "translate(0," + (height) + ")")
@@ -234,32 +248,6 @@ var live_charts = (function(my) {
                     .exit()
                     .remove();
 
-
-                // // Labels on each graph line
-                // chart.selectAll("text.yAxis")
-                //     .data(my_line_chart.historical_values)
-                //     .enter()
-                //     .append("svg:text")
-                //     .attr("x", -margin)
-                //     .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; })
-                //     .attr("dx", 0) // padding-right
-                //     .attr("dy", ".35em") // vertical-align: middle
-                //     .attr("class", "yAxis")
-                //     .attr("fill", function(d, i) { return color(i); })
-                //     .text(function(d,i){return String(d[0].name);});
-
-                // chart.selectAll("text.yAxis")
-                //     .data(my_line_chart.historical_values)
-                //     .transition()
-                //     .duration(transition_delay)
-                //     .attr("fill", function(d, i) { return color(i); })
-                //     .attr("y", function(d) {return -1.0 * ( y_bands(d[0].name) + y_bands.rangeBand() / 2) + height; });
-
-                // chart.selectAll("text.yAxis")
-                //     .data(my_line_chart.historical_values)
-                //     .exit()
-                //     .remove();
-
                 // values displayed for most recent data point at end of line
                 chart.selectAll("text.values")
                     .data(my_line_chart.historical_values)
@@ -272,7 +260,10 @@ var live_charts = (function(my) {
                     .attr("class", "values")
                     .attr("text-anchor", "end") // text-align: right
                     .attr("fill", function(d, i) { return color(i); })
-                    .text(function(d,i){return String(d[0].name) + "  " + String(d[0].value);});
+                    .text(function(d,i){return String(d[0].name) + "  " + String(d[0].value);})
+                    .on("click", function(d){
+                        console.log(String(d[0].name) + "  " + String(d[d.length-1].value));
+                    });
 
                 chart.selectAll("text.values")
                     .data(my_line_chart.historical_values)
@@ -340,7 +331,11 @@ var live_charts = (function(my) {
                 }
             };
 
-            my.register_data_source(server, data_source, my_line_chart.redraw);
+            if (data_source === null){
+                my_line_chart.redraw();
+            } else {
+                my.register_data_source(server, data_source, my_line_chart.redraw);
+            }
             return my_chart;
 
         };
@@ -372,6 +367,9 @@ var live_charts = (function(my) {
             if (!arguments.length) return width;
             width = value;
             width_changed = true;
+            if (data_source === null && my_line_chart.hasOwnProperty("redraw")){
+                my_line_chart.redraw();
+            }
             return this;
         };
 
@@ -379,6 +377,9 @@ var live_charts = (function(my) {
             if (!arguments.length) return height;
             height = value;
             height_changed = true;
+            if (data_source === null && my_line_chart.hasOwnProperty("redraw")){
+                my_line_chart.redraw();
+            }
             return this;
         };
 
@@ -408,6 +409,19 @@ var live_charts = (function(my) {
             if (!arguments.length) return my_chart.data_source;
             data_source = value;
             // TODO - deregister source and register new source
+            return this;
+        };
+
+        my_chart.data = function(value){
+            if (!arguments.length) return my_line_chart.historical_values;
+            my_line_chart.historical_values = value;
+            my_line_chart.index_map = {};
+
+            for (var data_set in my_line_chart.historical_values){
+                my_line_chart.index_map[my_line_chart.historical_values[data_set][0].name] = data_set;
+            }
+
+            console.log(my_line_chart.historical_values, my_line_chart.index_map);
             return this;
         };
 
