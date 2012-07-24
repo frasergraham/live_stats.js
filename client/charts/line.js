@@ -291,7 +291,14 @@ var live_charts = (function(my) {
                         .attr("id", function(d, i) { return "Path-" + i; })
                         .attr("class", "line_chart")
                         .attr("stroke", function(d, i) { return color(i); })
-                        .attr('d', function(d,i){ return line(my_line_chart.historical_values[i]);} );
+                        .attr('d', function(d,i){
+                            var len = saved_points;
+                            var empty_line = [];
+                            console.log(d);
+                            while (len--){
+                                 empty_line[len] = {name:d[0].name, value:1};
+                            }
+                            return line(empty_line);} );
 
                     if (width_changed || height_changed){
                         paused = true;
