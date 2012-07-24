@@ -22,7 +22,7 @@ wss.on('connection', function(ws) {
 		var tmp_rand = {};
 		var random_entry = function(e){
 			return {name : e,
-					value: Math.floor(Math.random() * 100)
+					value: Math.floor(Math.random() * 450)
 					};
 				};
 
