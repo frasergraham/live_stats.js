@@ -26,80 +26,97 @@
             .default_height(100)
             .default_selector("#test_3");
 
+
+          d3.json("test_data.json", function(test_data){
+              data = test_data;
+
+              static_test_line = live_charts.static_charts.line_chart("poopy")
+                                    .width(800)
+                                    .height(300)
+                                    .stacked(true)
+                                    .saved_points(30)
+                                    .data(data)
+                                    .bind("#test_2");
+
+              make_editable(static_test_line, "#test_2");
+
+          });
+
+
+          var make_editable = function(chart, chart_selector){
+            var dragging = false;
+            var startY, startX;
+            var initial_height = chart.height();
+            var initial_width = chart.width();
+
+            var updown = $("<div class='mover'>✛</div> ");
+            $(chart_selector + " > .chart").after(updown);
+            $(updown).css({"width" : 25, "margin-left" : chart.width()});
+
+            $(chart_selector + " > .mover").mousedown(function(event){
+              startY = event.pageY;
+              startX = event.pageX;
+              dragging = true;
+              chart.transition_delay(10);
+
+              if (event && event.preventDefault) {
+                 event.preventDefault();
+              }
+            });
+
+            $("html").mouseup(function(event){
+              if (dragging){
+                dragging = false;
+                chart.transition_delay("auto");
+
+                var distY = event.pageY - startY;
+                console.log("y: " + distY);
+                if (distY > 10 || distY < -10){
+                  chart.height(Math.max(initial_height + distY, 50) );
+                }
+
+                $("#hline").css({"top": event.pageY + "px", "display": "none"});
+
+                initial_height = chart.height();
+
+                var distX = event.pageX - startX;
+                console.log("x: " + distX);
+                if (distX > 10 || distX < -10){
+                  chart.width(Math.max(initial_width + distX, 50) );
+                }
+
+                $("#vline").css({"left": event.pageX + "px", "display": "none"});
+                $(chart_selector + " > .mover").css({"margin-left" : chart.width()});
+                initial_width = chart.width();
+              }
+            });
+
+            $("html").mousemove(function(event){
+              if (dragging){
+
+                $("#hline").css({"top": event.pageY + "px", "display": "block"});
+                $("#vline").css({"left": event.pageX + "px", "display": "block"});
+              }
+
+              if (event && event.preventDefault) {
+                 event.preventDefault();
+              }
+            });
+          }
+
           var connection = live_charts.connect_to_data_source("ws://localhost:8080",
             function(data_groups){
               var data;
-              d3.json("test_data.json", function(test_data){
-                data = test_data;
 
-                test_line = connection.line_chart()
+                test_line = connection.line_chart("hello")
                                       .width(800)
                                       .height(300)
                                       .stacked(true)
                                       .saved_points(30)
-                                      .data(data)
+                                      .data_source("group_1")
                                       .bind("#test_1");
 
-                var dragging = false;
-                var startY, startX;
-                var initial_height = test_line.height();
-                var initial_width = test_line.width();
-
-                var updown = $("<div id='group_1_mover' class='mover'>✛</div> ");
-                $("#test_1 > .chart").after(updown);
-                $(updown).css({"width" : 25, "margin-left" : test_line.width()});
-
-                $("#group_1_mover").mousedown(function(event){
-                  startY = event.pageY;
-                  startX = event.pageX;
-                  dragging = true;
-                  test_line.transition_delay(10);
-
-                  if (event && event.preventDefault) {
-                     event.preventDefault();
-                  }
-                });
-
-                $("html").mouseup(function(event){
-                  if (dragging){
-                    dragging = false;
-                    test_line.transition_delay("auto");
-
-                    var distY = event.pageY - startY;
-                    console.log("y: " + distY);
-                    if (distY > 10 || distY < -10){
-                      test_line.height(Math.max(initial_height + distY, 50) );
-                    }
-
-                    $("#hline").css({"top": event.pageY + "px", "display": "none"});
-
-                    initial_height = test_line.height();
-
-                    var distX = event.pageX - startX;
-                    console.log("x: " + distX);
-                    if (distX > 10 || distX < -10){
-                      test_line.width(Math.max(initial_width + distX, 50) );
-                    }
-
-                    $("#vline").css({"left": event.pageX + "px", "display": "none"});
-                    $("#group_1_mover").css({"margin-left" : test_line.width()});
-                    initial_width = test_line.width();
-                  }
-                });
-
-                $("html").mousemove(function(event){
-                  if (dragging){
-
-                    $("#hline").css({"top": event.pageY + "px", "display": "block"});
-                    $("#vline").css({"left": event.pageX + "px", "display": "block"});
-                  }
-
-                  if (event && event.preventDefault) {
-                     event.preventDefault();
-                  }
-                });
-
-              });
+                make_editable(test_line, "#test_1");
 
               // test_line2 = connection.line_chart()
               //                       .width(800)
@@ -147,6 +164,7 @@
 
     <div id="hline" class="hline"></div>
     <div id="vline" class="vline"></div>
+
     <p id="test_1"></p>
     <a href="#" id="toggle_stacked">TOGGLE STACKED</a>
 

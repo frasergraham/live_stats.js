@@ -15,7 +15,19 @@
 var live_charts = (function(my) {
     var _settings = my._settings = my._settings || {};
 
-    my.Connection.prototype.line_chart = function line_chart(){
+    if (my.static_charts === undefined){
+        my.static_charts = {};
+    }
+
+    my.issue_id = function(){
+        var current = 0;
+        return function(){
+            current = current + 1;
+            return current;
+        };
+    }();
+
+    my.static_charts.line_chart = function line_chart(){
         var width = _settings.default_width;
         var height = _settings.default_height;
         var width_changed = false;
@@ -29,6 +41,8 @@ var live_charts = (function(my) {
         var chart;
         var my_line_chart = {};
         var line;
+
+        var random_id = my.issue_id();
 
         var my_chart = function my_chart(selector){
             var margin = 0;
@@ -74,7 +88,7 @@ var live_charts = (function(my) {
 
             chart.append("defs")
                 .append("clipPath")
-                .attr("id", "clip")
+                .attr("id", "clip_" + random_id)
                 .append("rect")
                 .attr("width", width - margin - x(2))
                 .attr("height", height);
@@ -192,7 +206,7 @@ var live_charts = (function(my) {
                     .attr("width", width + right_margin)
                     .attr("height", height + xaxis_margin);
 
-                d3.select("#clip")
+                d3.select("#clip_" + random_id)
                     .select("rect")
                     .transition()
                     .duration(transition_delay)
@@ -280,13 +294,12 @@ var live_charts = (function(my) {
                     .remove();
 
                 if (!paused){
-
                     // Finally update all the paths
                     chart.selectAll("path")
                         .data(my_line_chart.historical_values)
                         .enter()
                         .append("g")
-                        .attr("clip-path", "url(#clip)")
+                        .attr("clip-path", "url(#clip_" + random_id + ")")
                         .append("svg:path")
                         .attr("id", function(d, i) { return "Path-" + i; })
                         .attr("class", "line_chart")
@@ -294,7 +307,6 @@ var live_charts = (function(my) {
                         .attr('d', function(d,i){
                             var len = saved_points;
                             var empty_line = [];
-                            console.log(d);
                             while (len--){
                                  empty_line[len] = {name:d[0].name, value:1};
                             }
@@ -322,7 +334,6 @@ var live_charts = (function(my) {
                                 // console.log(mouse_pos);
                                 var pos = Math.floor(x.invert(mouse_pos[0]));
                                 var data_val = d[pos].value;
-                                console.log(d[pos].name + " " + data_val);
                             })
                             .transition()
                             .ease("linear")
@@ -427,8 +438,6 @@ var live_charts = (function(my) {
             for (var data_set in my_line_chart.historical_values){
                 my_line_chart.index_map[my_line_chart.historical_values[data_set][0].name] = data_set;
             }
-
-            console.log(my_line_chart.historical_values, my_line_chart.index_map);
             return this;
         };
 
@@ -439,6 +448,8 @@ var live_charts = (function(my) {
 
         return my_chart;
     };
+
+    my.Connection.prototype.line_chart = my.static_charts.line_chart;
 
     return my;
 
