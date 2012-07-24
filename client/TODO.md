@@ -1,34 +1,29 @@
 live_stats Client TODO
 ----------------------
 
-X Axis ticks when saved points changes
-- multiple line graphs and axis
-- Can't do anything without a websocket connection
 
 
 - Different Chart Types
 	O Line
-		- Key for overlays
 		- Tooltips on points
-		O stacked vs overlaid
-            - Transiton axis and labels
-            - Show Key
-        - Proper Axis
         - Use time labels on the axis?
-        - Update every X seconds regardless, duplicate last points to keep the graph moving
+        - Axis should be time based? Requires async update?
 
-	O Pie
-		- Key
+    O Pie
+        - Key
+        - switch to storing historical and provide scrubber
 
     O Bar
         - Handle text overlay on labels
+        - switch to storing historical and provide scrubber
 
     - All Charts
+        - Update every X seconds regardless, duplicate last points to keep the graph moving
         - Proper handling of margins
         - Consistent CSS class names
         - Consistent code patterns for enter, update, exit
         - Headers and labels (show data source and group?)
-
+        - Static data options
         - Unregistering sources
 
 - API
