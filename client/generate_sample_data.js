@@ -11,7 +11,7 @@ fs.open("./test_data_generated.json", "w", 0666, function(err, fd){
         }
     }
 
-    var json_data = JSON.stringify(data);
+    var json_data = JSON.stringify(data, null, 4);
     console.log(json_data);
     fs.write(fd, json_data, 0, json_data.length);
 
