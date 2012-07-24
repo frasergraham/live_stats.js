@@ -70,6 +70,7 @@ var live_charts = (function(my) {
                 .domain([0, saved_points - 2])
                 .range([0, width - margin - x(2)]);
 
+            // The input scale we start with isn't relevant, it gets overwritten after looking at the data
             var y = d3.scale.linear()
                 .domain([0,100])
                 .range([0, height]);
@@ -206,12 +207,6 @@ var live_charts = (function(my) {
                     .attr("width", width + right_margin)
                     .attr("height", height + xaxis_margin);
 
-                d3.select("#clip_" + random_id)
-                    .select("rect")
-                    .transition()
-                    .duration(transition_delay)
-                    .attr("width", width - margin - x(2))
-                    .attr("height", height);
 
                 x.domain([0, saved_points])
                  .range([0, width - margin]);
@@ -219,7 +214,28 @@ var live_charts = (function(my) {
                 fake_x.domain([0, saved_points - 2])
                  .range([0, width - margin - x(2)]);
 
-                y.domain([0,100])
+                d3.select("#clip_" + random_id)
+                    .select("rect")
+                    .transition()
+                    .duration(transition_delay)
+                    .attr("width", width - margin - x(2))
+                    .attr("height", height);
+
+                var find_max = function(values){
+                    var max_val = 0;
+                    var get_data = function(d){ return d.value;};
+
+                    for (var line in values){
+                        var value_array = values[line].map(get_data);
+                        var line_max = d3.max(value_array);
+                        if (line_max > max_val){
+                            max_val = line_max;
+                        }
+                    }
+                    return max_val;
+                };
+
+               y.domain([0,find_max(my_line_chart.historical_values)])
                  .range([0, height]);
 
                 xAxis.tickSize(-height);
